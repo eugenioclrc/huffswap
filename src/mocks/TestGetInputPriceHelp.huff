@@ -1,0 +1,17 @@
+#include "../PriceCallMacros.huff"
+
+#define macro MAIN() = takes (0) returns (0) {
+
+  0x04 calldataload     // [input_amount]
+  0x24 calldataload     // [input_reserve, input_amount]
+  0x44 calldataload     // [output_reserve, input_reserve, input_amount]
+
+  GET_INPUT_PRICE()     // [price]
+
+  0x00
+  mstore
+
+  0x20
+  0x00
+  return
+}

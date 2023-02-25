@@ -1,0 +1,19 @@
+#define macro GET_INPUT_PRICE() = takes(3) returns(1) {
+  // input    [output_reserve, input_reserve, input_amount]
+  // output   [price]
+
+  0x3E5         // [997, output_reserve, input_reserve, input_amount]
+  dup4          // [input_amount, 997, output_reserve, input_reserve, input_amount]
+  mul           // [input_amount_with_fee, output_reserve, input_reserve, input_amount]
+  dup1          // [input_amount_with_fee, input_amount_with_fee, output_reserve, input_reserve, input_amount]
+  swap2         // [output_reserve, input_amount_with_fee, input_amount_with_fee, input_reserve, input_amount]
+  mul           // [numerator, input_amount_with_fee, input_reserve, input_amount]
+  dup3          // [input_reserve, numerator, input_amount_with_fee, input_reserve, input_amount]
+  0x3E8         // [1000, input_reserve, numerator, input_amount_with_fee, input_reserve, input_amount]
+  mul           // [input_reserve_x_1000, numerator, input_amount_with_fee, input_reserve, input_amount]
+  dup3          // [input_amount_with_fee, input_reserve_x_1000, numerator, input_amount_with_fee, input_reserve, input_amount]
+  add           // [denominator, numerator, input_amount_with_fee, input_reserve, input_amount]
+  swap1         // [numerator, denominator]
+  div           // [price]
+}
+
