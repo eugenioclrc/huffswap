@@ -26,47 +26,96 @@
     // input      [tokenAddress, tokensSold]
     // output     [price]  
 
-    dup1          // [tokenAddress, tokenAddress, tokensSold]
-    0x00          // [0x00, tokenAddress, tokenAddress, tokensSold]
-    eq            // [is_address(0), tokenAddress, tokensSold]
-    not           // [is_not_address(0), tokenAddress, tokensSold]
-    _continue jumpi
-    ZERO_ADDRESS(0x00)
+    dup1
+    IS_NOT_ADDRESS_ZERO()
 
-    _continue:
+    address       // [fromAddress, tokenAddress, tokenSold]
+    GET_TOKEN_BALANCE_OF_STATIC()   // [totalReserve, tokenSold]
 
-      // save signature on memory
-      __FUNC_SIG(balanceOf) // [signature, tokenAddress, token_sold]
-      0xE0 shl
-      0x00 mstore // [tokenAddress, tokensSold]      
+    selfbalance         // [balance, totalReserve, tokensSold]
 
-      // save address on memory
-      address     // [address(this), tokenAddress, tokensSold]
-      0x04        // [0x04, address(this), tokenAddress, tokensSold]
-      mstore      // [tokenAddress, tokensSold]
+    GET_INPUT_PRICE()   // [price]
+}
 
-      0x20      // [retSize, tokenAddress, tokensSold]
-      0x00      // [retOffset, retSize, tokenAddress, tokensSold]
-      0x24      // [argsSize, retOffset, retSize, tokenAddress, tokensSold]
-      0x00      // [argsOffset, argsSize, retOffset, retSize, tokenAddress, tokensSold]  
-      
-      dup5      // [tokenAddress, argsOffset, argsSize, retOffset, retSize, tokenAddress, tokensSold]  
-      
-      gas       // [gas, tokenAddress, argsOffset, argsSize, retOffset, retSize, tokenAddress, tokensSold]  
-      
-      staticcall  // [success, tokenAddress, tokensSold]
-      
-      // Revert if call is unsuccessful
-      iszero iszero _success jumpi
-      0x00 dup1 revert
-      
-      _success:             // [tokenAddress, tokensSold]
-        pop                 // [tokenSold]
- 
-        0x00
-        mload               // [totalReserve, tokensSold]
+#define macro GET_ETH_TO_TOKEN_INPUT_PRICE() = takes(2) returns(1) {
+    // input      [tokenAddress, ethSold]
+    // output     [price]  
 
-        selfbalance         // [balance, totalReserve, tokensSold]
+    // ethSold != 0
+    dup2
+    IS_NOT_ZERO()
 
-        GET_INPUT_PRICE()   // [price]
+    address       // [fromAddress, tokenAddress, ethSold]
+    GET_TOKEN_BALANCE_OF_STATIC()   // [totalReserve, ethSold]
+
+    // totalReserve != 0
+    dup1 
+    IS_NOT_ZERO()
+
+    selfbalance         // [balance, totalReserve, ethSold]
+
+    swap1
+
+    GET_INPUT_PRICE()   // [price]
+}
+
+#define macro IS_NOT_ZERO() = takes(1) returns(0) {
+  // Input Stack: [value]
+  // Output Stack: []
+
+  iszero        // [is_zero]
+  not           // [is_not_zero]
+  _continue   
+  jumpi
+  ZERO_ASSETS(0x00)
+
+  _continue:
+}
+
+#define macro IS_NOT_ADDRESS_ZERO() = takes(1) returns(0) {
+  // Input Stack: [address]
+  // Output Stack: []
+
+  0x00          // [0x00, address]
+  eq            // [is_address(0)]
+  not           // [is_not_address(0)]
+  _continue 
+  jumpi
+  ZERO_ADDRESS(0x00)
+
+  _continue:
+}
+
+#define macro GET_TOKEN_BALANCE_OF_STATIC() = takes(2) returns(1) {
+  // Input Stack:  [fromAddress, tokenAddress]
+  // Output Stack: [balance]
+
+  // save signature on memory
+  __FUNC_SIG(balanceOf) // [signature, fromAddress, tokenAddress]
+  0xE0 shl
+  0x00 mstore // [fromAddress, tokenAddress]      
+
+  // save fromAddress in memory
+  0x04        // [0x04, fromAddress, tokenAddress]
+  mstore      // [tokenAddress]
+
+  0x20      // [retSize, tokenAddress]
+  0x00      // [retOffset, retSize, tokenAddress]
+  0x24      // [argsSize, retOffset, retSize, tokenAddress]
+  0x00      // [argsOffset, argsSize, retOffset, retSize, tokenAddress]  
+  
+  dup5      // [tokenAddress, argsOffset, argsSize, retOffset, retSize, tokenAddress]  
+  
+  gas       // [gas, tokenAddress, argsOffset, argsSize, retOffset, retSize, tokenAddress]  
+  
+  staticcall  // [success, tokenAddress]
+
+  // Revert if call is unsuccessful
+  iszero iszero _success jumpi
+  0x00 dup1 revert
+  
+  _success:             // [tokenAddress]
+    pop
+    0x00
+    mload               // [balance, tokenAddress] 
 }

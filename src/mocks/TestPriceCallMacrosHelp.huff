@@ -2,12 +2,14 @@
 
 #define function getInputPrice(uint256, uint256, uint256) nonpayable returns (uint256)
 #define function getTokenToEthInputPrice(uint256, address) nonpayable returns (uint256)
+#define function getEthToTokenInputPrice(uint256, address) nonpayable returns (uint256)
 
 #define macro MAIN() = takes (0) returns (0) {
   0x00 calldataload 0xe0 shr
 
   dup1 __FUNC_SIG(getInputPrice) eq getInputPriceJump jumpi
   dup1 __FUNC_SIG(getTokenToEthInputPrice) eq getTokenToEthInputPriceJump jumpi
+  dup1 __FUNC_SIG(getEthToTokenInputPrice) eq getEthToTokenInputPriceJump jumpi
 
   getInputPriceJump:
     0x04 calldataload     // [input_amount]
@@ -24,10 +26,23 @@
     return
 
   getTokenToEthInputPriceJump:
-    0x04 calldataload                 // [tokens_sold]
-    0x24 calldataload                 // [token_address, tokens_sold]
+    0x04 calldataload                 // [tokensSold]
+    0x24 calldataload                 // [tokenAddress, tokensSold]
 
     GET_TOKEN_TO_ETH_INPUT_PRICE()    // [price]
+    
+    0x00                              // [0x00, price]
+    mstore                            
+
+    0x20    
+    0x00
+    return
+
+  getEthToTokenInputPriceJump:
+    0x04 calldataload                 // [ethSold]
+    0x24 calldataload                 // [tokenAddress, ethSold]
+
+    GET_ETH_TO_TOKEN_INPUT_PRICE()    // [price]
     
     0x00                              // [0x00, price]
     mstore                            
