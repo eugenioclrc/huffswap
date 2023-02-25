@@ -38,17 +38,17 @@
       // save signature on memory
       __FUNC_SIG(balanceOf) // [signature, tokenAddress, token_sold]
       0xE0 shl
-      0x20 mstore // [tokenAddress, tokensSold]      
+      0x00 mstore // [tokenAddress, tokensSold]      
 
       // save address on memory
       address     // [address(this), tokenAddress, tokensSold]
-      0x24        // [0x04, address(this), tokenAddress, tokensSold]
+      0x04        // [0x04, address(this), tokenAddress, tokensSold]
       mstore      // [tokenAddress, tokensSold]
 
       0x20      // [retSize, tokenAddress, tokensSold]
       0x00      // [retOffset, retSize, tokenAddress, tokensSold]
       0x24      // [argsSize, retOffset, retSize, tokenAddress, tokensSold]
-      0x20      // [argsOffset, argsSize, retOffset, retSize, tokenAddress, tokensSold]  
+      0x00      // [argsOffset, argsSize, retOffset, retSize, tokenAddress, tokensSold]  
       
       dup5      // [tokenAddress, argsOffset, argsSize, retOffset, retSize, tokenAddress, tokensSold]  
       
