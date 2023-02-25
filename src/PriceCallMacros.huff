@@ -1,3 +1,8 @@
+#include "huffmate/utils/CommonErrors.huff"
+#include "huffmate/tokens/ERC20.huff"
+
+// #define function balanceOf(address) view returns (uint256)
+
 #define macro GET_INPUT_PRICE() = takes(3) returns(1) {
   // input    [output_reserve, input_reserve, input_amount]
   // output   [price]
@@ -17,3 +22,51 @@
   div           // [price]
 }
 
+#define macro GET_TOKEN_TO_ETH_INPUT_PRICE() = takes(2) returns(1) {
+    // input      [tokenAddress, tokensSold]
+    // output     [price]  
+
+    dup1          // [tokenAddress, tokenAddress, tokensSold]
+    0x00          // [0x00, tokenAddress, tokenAddress, tokensSold]
+    eq            // [is_address(0), tokenAddress, tokensSold]
+    not           // [is_not_address(0), tokenAddress, tokensSold]
+    _continue jumpi
+    ZERO_ADDRESS(0x00)
+
+    _continue:
+
+      // save signature on memory
+      __FUNC_SIG(balanceOf) // [signature, tokenAddress, token_sold]
+      0xE0 shl
+      0x20 mstore // [tokenAddress, tokensSold]      
+
+      // save address on memory
+      address     // [address(this), tokenAddress, tokensSold]
+      0x24        // [0x04, address(this), tokenAddress, tokensSold]
+      mstore      // [tokenAddress, tokensSold]
+
+      0x20      // [retSize, tokenAddress, tokensSold]
+      0x00      // [retOffset, retSize, tokenAddress, tokensSold]
+      0x24      // [argsSize, retOffset, retSize, tokenAddress, tokensSold]
+      0x20      // [argsOffset, argsSize, retOffset, retSize, tokenAddress, tokensSold]  
+      
+      dup5      // [tokenAddress, argsOffset, argsSize, retOffset, retSize, tokenAddress, tokensSold]  
+      
+      gas       // [gas, tokenAddress, argsOffset, argsSize, retOffset, retSize, tokenAddress, tokensSold]  
+      
+      staticcall  // [success, tokenAddress, tokensSold]
+      
+      // Revert if call is unsuccessful
+      iszero iszero _success jumpi
+      0x00 dup1 revert
+      
+      _success:             // [tokenAddress, tokensSold]
+        pop                 // [tokenSold]
+ 
+        0x00
+        mload               // [totalReserve, tokensSold]
+
+        selfbalance         // [balance, totalReserve, tokensSold]
+
+        GET_INPUT_PRICE()   // [price]
+}
