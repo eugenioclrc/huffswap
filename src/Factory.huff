@@ -1,0 +1,196 @@
+#include "huffmate/data-structures/Hashmap.huff"
+#include "huffmate/mechanisms/huff-clones/HuffCloneLib.huff"
+#include "huffmate/utils/CommonErrors.huff"
+//#include "huffmate/utils/Calls.huff"
+
+#define constant EXCHANGE_IMPLEMENTATION = 0x0000000000000000000000000000000000000000
+
+// Functions
+
+#define function IMPLEMENTATION() view returns (address exchangeImplementation)
+#define function tokenCount() view returns (uint256)
+#define function getExchange(address token) view returns (address exchange)
+#define function getToken(address exchange) view returns (address token)
+#define function getTokenWithId(uint256 tokenId) view returns (address token)
+
+#define function initialize() nonpayable returns ()
+#define function createExchange(address tokenId) nonpayable returns (address token)
+
+// Events
+#define event NewExchange(address indexed token, address indexed exchange)
+
+
+
+/// storage
+// uint256 public tokenCount;
+#define constant VALUE_TOKENCOUNT_LOCATION = FREE_STORAGE_POINTER()
+// mapping(address => address payable) private _tokenToExchange;
+#define constant VALUE_TOKENTOEXCHANGE_LOCATION = FREE_STORAGE_POINTER()
+// mapping(address => address) private _exchangeToToken;
+#define constant VALUE_EXCHANGETOTOKEN_LOCATION = FREE_STORAGE_POINTER()
+// mapping(uint256 => address) private _idToToken;
+#define constant VALUE_IDTOTOKEN_LOCATION = FREE_STORAGE_POINTER()
+
+
+/// @notice Creates an `ExampleClone` contract, 
+#define macro CREATE_CLONE() = takes (1) returns (1) {
+
+    // data len = 61 (0x3D)
+    0x3D 0x40 mstore    // [address, uint256, uint64, uint8]
+    // Store address << 0x60 @ 0x60
+    0x60 shl            // [address << 0x60, uint256, uint64, uint8]
+    0x60 mstore         // [uint256, uint64, uint8]
+
+    0x40                // [data_ptr]
+    [EXCHANGE_IMPLEMENTATION]// sload   // [impl_addr, data_ptr]
+
+    CLONE(err, 0x00)    // [instance]
+    
+    ret jump 
+    
+    err:
+        0x00 0x00 revert
+    ret:
+}
+
+#define macro INITIALIZE_EXCHANGE() = takes (1) returns (1) {
+    dup1
+    /*
+    
+    __FUNC_SIG(initialize) 0x00 mstore      // [instance]
+    0x00                                    // [0x00,instance]
+    0x00                                    // [0x00, 0x00,instance]
+    0x04                                    // [0x00, 0x00, 0x04,instance]
+    0x1c                                    // [0x00, 0x00, 0x04, 0x1c,instance]
+    0x00                                    // [0x00, 0x00, 0x04, 0x1c, 0x00,instance]
+    dup6                                   // [instance, 0x00, 0x00, 0x04, 0x1c, 0x00]
+    gas
+    call
+
+    __initializedOk jumpi
+        INITIALIZATION_FAILED(0x00)
+    __initializedOk:
+    */
+    
+}
+
+#define macro CREATE_EXCHANGE() = takes(0) returns(0) {
+    0x04 calldataload                   // [tokenAddress]
+    
+    // address 0 check
+    dup1 iszero iszero __norevertJump jumpi
+    ZERO_ADDRESS(0x00)
+    
+    __norevertJump:
+    // end address 0 check
+
+    // check if contract
+    dup1 extcodesize              // [isContract(address), address]
+    __Is_Contract_JUMP jumpi                    // [address]
+        NON_CONTRACT(0x00)
+    __Is_Contract_JUMP:
+    // end check if contract
+    
+    // check if already exists
+    [VALUE_TOKENTOEXCHANGE_LOCATION]
+    LOAD_ELEMENT_FROM_KEYS(0x00)    // [exchangeAddress, tokenAddress]
+    
+    // if exist return address
+    dup1 returnDataJump jumpi
+
+    // Create Exchange
+    
+    [VALUE_TOKENCOUNT_LOCATION] sload       // [tokenCount, tokenAddress]
+    0x01 add                                // [tokenCount + 1, tokenAddress]
+
+    dup1                                    // [tokenCount + 1, tokenCount + 1, tokenAddress]
+    [VALUE_TOKENCOUNT_LOCATION] sstore      // [tokenCount + 1, tokenAddress]
+
+    0x04 calldataload
+    dup1                                    // [tokenAddress, tokenAddress, tokenCount + 1]
+    swap2 
+    [VALUE_IDTOTOKEN_LOCATION]              // [ptr_idToToken, tokenAddress, tokenCount + 1, ]
+    STORE_ELEMENT_FROM_KEYS(0x00)           // []
+    
+    // crear
+    CREATE_CLONE()                         // [exchangeAddress]
+    dup1                                   // [exchangeAddress, exchangeAddress]
+    INITIALIZE_EXCHANGE()
+
+    0x04 calldataload                      // [tokenAddress, exchangeAddress, exchangeAddress]
+    [VALUE_TOKENTOEXCHANGE_LOCATION]       // [ptr_tokenToExchange, tokenAddress, exchangeAddress, exchangeAddress]
+    STORE_ELEMENT_FROM_KEYS(0x00)          // [exchangeAddress, exchangeAddress]
+
+    // create exchange event
+    0x04 calldataload                       // [tokenAddress, exchangeAddress, exchangeAddress]
+    __EVENT_HASH(NewExchange)               // [sig, tokenAddress, exchangeAddress]
+    0x20 0x00                               // [0, 32, sig, tokenAddress, exchangeAddress]
+    log3                                    // []
+
+    returnDataJump:
+        0x00 mstore
+        0x20 0x00 return
+    
+}
+
+// Get the value for the given keys.
+#define macro GET_TOKENCOUNT() = takes(0) returns(0) {
+    [VALUE_TOKENCOUNT_LOCATION] sload
+    0x00 mstore
+    0x20 0x00 return
+}
+
+// Get the value for the given keys.
+#define macro GET_EXCHANGE() = takes(0) returns(0) {
+    0x04 calldataload [VALUE_TOKENTOEXCHANGE_LOCATION]
+    LOAD_ELEMENT_FROM_KEYS(0x00) 0x00 mstore
+    0x20 0x00 return
+}
+
+#define macro GET_TOKEN() = takes(0) returns(0) {
+    0x04 calldataload [VALUE_EXCHANGETOTOKEN_LOCATION]
+    LOAD_ELEMENT_FROM_KEYS(0x00) 0x00 mstore
+    0x20 0x00 return
+}
+
+#define macro GET_TOKENWITHID() = takes(0) returns(0) {
+    0x04 calldataload [VALUE_IDTOTOKEN_LOCATION]
+    LOAD_ELEMENT_FROM_KEYS(0x00) 0x00 mstore
+    0x20 0x00 return
+}
+
+#define macro GET_IMPLEMENTATION() = takes (0) returns (0) {
+    [EXCHANGE_IMPLEMENTATION] 0x00 mstore
+    0x20 0x00 return
+}
+
+#define macro MAIN() = takes (0) returns (0) {
+    0x00 calldataload 0xe0     // [0x00, calldataload, 0xe0]
+    shr                        // [func]
+
+    dup1 __FUNC_SIG(IMPLEMENTATION)         eq implementationJump   jumpi
+    dup1 __FUNC_SIG(getExchange)            eq getExchangeJump      jumpi
+    dup1 __FUNC_SIG(getToken)               eq getTokenJump         jumpi
+    dup1 __FUNC_SIG(getTokenWithId)         eq getTokenWithIdJump   jumpi
+    dup1 __FUNC_SIG(tokenCount)             eq tokenCountJump       jumpi
+    dup1 __FUNC_SIG(createExchange)         eq createExchangeJump   jumpi
+    
+
+    // func not implemented
+    0x00 dup1 revert
+
+    implementationJump:
+        GET_IMPLEMENTATION()
+
+    getExchangeJump:
+        GET_EXCHANGE()
+    getTokenJump:
+        GET_TOKEN()
+    getTokenWithIdJump:
+        GET_TOKENWITHID()
+    tokenCountJump:
+        GET_TOKENCOUNT()
+
+    createExchangeJump:
+        CREATE_EXCHANGE()
+}

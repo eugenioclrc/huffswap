@@ -1,0 +1,53 @@
+#include "../ExchangeHelp.huff"
+
+#define function balance(address token) nonpayable returns (uint256)
+#define function addLiquidity(uint256 token, uint256 amount, address) payable returns (uint256, uint256)
+#define function fund() payable returns()
+
+#define macro GETBALANCETOKEN() = takes (0) returns (0) {
+  0x04 calldataload // param0
+  TOTAL_ASSETS_INNER()
+
+  0x00 mstore
+  0x20 0x00 return                   // [balance]
+}
+
+#define macro ADDLIQUIDITY() = takes (0) returns (0) {
+    0x44 calldataload // token address, por ahora metemos cualquiera
+    0x24 calldataload // param1 max_tokens
+    
+    // total minted
+    0x04 calldataload // param0
+    
+    // [ token minted, amount_token_max]
+  
+    // Input Stack: [total_supplyLP, max_tokens, address token]
+    CALCULATE_TRANSFERS_FOR_LIQUIDITY()
+    // Output Stack: [tokens_to_transfer, liquidity_to_mint]
+
+    0x20 mstore
+    0x00 mstore
+    0x40 0x00 return                   // [balance]
+
+}
+
+
+#define macro MAIN() = takes (0) returns (0) {
+    pc calldataload 0xE0 shr
+
+    dup1 __FUNC_SIG(balance) eq getBalanceJump jumpi
+    dup1 __FUNC_SIG(addLiquidity) eq addLiquidityJump jumpi
+    dup1 __FUNC_SIG(fund) eq fundJump jumpi
+    
+    0x00 0x00 revert
+
+    getBalanceJump:
+      GETBALANCETOKEN()
+    
+    addLiquidityJump:
+      ADDLIQUIDITY()
+
+    fundJump:
+      0x00 0x00 return
+
+}

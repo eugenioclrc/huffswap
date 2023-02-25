@@ -1,0 +1,213 @@
+/// @title Exchange ERC20 Liquidity Pool
+/// @notice SPDX-License-Identifier: MIT
+/// @notice Based on Uniswap V1
+
+#include "huffmate/mechanisms/huff-clones/HuffClone.huff"
+#include "huffmate/tokens/ERC20.huff"
+#include "huffmate/utils/CommonErrors.huff"
+#include "huffmate/utils/ReentrancyGuard.huff"
+#include "huffmate/utils/SafeTransferLib.huff"
+#include "./ExchangeHelp.huff"
+
+#define function initialize() nonpayable returns ()
+#define function addLiquidity(uint256 min_liquidity, uint256 max_tokens, uint256 deadline) payable returns (uint256 liquidity_minted)
+
+#define function tokenAddress() view returns (address)
+#define function factory() view returns (address)
+
+#define event Initialized()
+
+#define constant FACTORY_ADDRESS = 0x0000000000000000000000000000000000000000
+
+// storage
+#define constant INITIALIZED_SLOT = FREE_STORAGE_POINTER()
+
+
+#define macro TOKEN_ADDRESS() = takes (0) returns (0) {
+    0x00 GET_ARG_ADDRESS()  // [arg_addr]
+    0x00 mstore             // []
+    0x20 0x00 return
+}
+
+
+#define macro FACTORY() = takes (0) returns (0) {
+    0x00 [FACTORY_ADDRESS]  // [arg_addr]
+    0x00 mstore             // []
+    0x20 0x00 return
+}
+
+#define macro DECIMALS() = takes (0) returns (0) {
+    0x12    // 18
+    0x00 mstore             // []
+    0x20 0x00 return
+}
+
+#define macro INITIALIZE() = takes (0) returns (0) {
+    // check caller == factory
+    [FACTORY_ADDRESS] caller eq jumpi __callerOk
+    ONLY_OWNER(0x00)
+
+    __callerOk:   
+
+    UNLOCK()
+
+    __EVENT_HASH(Initialized)                  // []
+    0x20 0x00                               // [0, 32, sig]
+    log3                                    // []
+    stop
+}
+
+
+#define macro ADDLIQUIDITY() = takes (0) returns (0) {
+    // require(mgs.value > 0)
+    callvalue __callValueOk jumpi 
+    ZERO_ASSETS(0x00)
+    __callValueOk:
+
+    // require(min_liquidity > 0)
+    0x04 calldataload // min_liquidity
+    dup1 __minLiquidityOk jumpi 
+    ZERO_ASSETS(0x00)
+    __minLiquidityOk:
+    
+    // require(max_tokens > 0)
+    0x24 calldataload // max_tokens
+    dup1 __maxTokensOk jumpi 
+    ZERO_ASSETS(0x0)
+    __maxTokensOk:
+
+    // require(block.timestamp > 0)
+    0x44 calldataload // deadline
+    timestamp lt __deadlineOk jumpi 
+    // write a better revert message 
+    0x00 0x00 revert
+    __deadlineOk:
+
+    // current stack    [max_tokens, min_liquidity]
+    
+    LOCK()
+
+    0x00 GET_ARG_ADDRESS()
+    dup1
+
+    // [address,address,max_tokens, min_liquidity]
+    dup3
+    // [max_tokens,address,address,max_tokens, min_liquidity]
+    
+    
+    [TOTAL_SUPPLY_SLOT] sload
+    // [supplylp, max_tokens,address,address,max_tokens, min_liquidity]
+
+
+    // Input Stack: [total_supplyLP, max_tokens, address token]
+    CALCULATE_TRANSFERS_FOR_LIQUIDITY()
+    // Output Stack: [tokens_to_transfer, liquidity_to_mint,address,max_tokens, min_liquidity
+    dup2 //  [tokens_to_transfer, tokens_to_transfer, liquidity_to_mint,address,max_tokens, min_liquidity
+    swap4 //  [max_tokens, tokens_to_transfer, tokens_to_transfer, liquidity_to_mint,address, min_liquidity
+    pop pop
+    /*
+
+    ver estos checkeos
+    dup2
+    gt __minTokenTransferOk jumpi 
+    0x00 0x00 revert
+    __minTokenTransferOk:
+
+    0x29
+    0x00 mstore
+    0x20 0x00 return
+    stop
+    */
+
+    
+    //  [tokens_to_transfer, liquidity_to_mint,address, min_liquidity
+    dup2
+    //  [liquidity_to_mint, tokens_to_transfer, liquidity_to_mint,address, min_liquidity
+    swap4
+    //  [min_liquidity, liquidity_to_mint, tokens_to_transfer, liquidity_to_mint,address, 
+
+/*
+
+verestos checkeos
+    gt jumpi __minSlippeageOk
+        NOT_MINTED(0x00)
+    __minSlippeageOk:
+
+    */
+    //  [tokens_to_transfer, liquidity_to_mint, 
+
+    swap2
+    //  [address,tokens_to_transfer, liquidity_to_mint, 
+    dup2
+    //  [tokens_to_transfer,address,tokens_to_transfer, liquidity_to_mint, 
+    address
+    //  [this,tokens_to_transfer,address,tokens_to_transfer, liquidity_to_mint, 
+    caller
+    //  [sender,this,tokens_to_transfer,address,tokens_to_transfer, liquidity_to_mint, 
+
+    SAFE_TRANSFER_FROM(0x00)
+    //  [tokens_to_transfer, liquidity_to_mint, 
+    dup2 caller _MINT()
+    
+
+    UNLOCK()
+
+
+    // emit AddLiquidity(msg.sender, msg.value, token_amount);
+    // __EVENT_HASH(AddLiquidity)                  // []
+    // 0x20 0x00                               // [0, 32, sig, from, to]
+    // log3                                    // []
+
+    // return  liquidity minted
+    dup2
+    0x00 mstore             // []
+    0x20 0x00 return
+}
+/*
+#define macro CONSTRUCTOR() = takes (0) returns (0) {
+    0x20                // [size] - byte size to copy
+    0x20 codesize sub   // [offset, size] - offset in the code to copy from
+    0x00                // [mem, offset, size] - offset in memory to copy to
+    codecopy            // []
+    
+    // must start locked
+    LOCK()
+}
+*/
+
+#define macro MAIN() = takes (0) returns (0) {
+    pc calldataload 0xE0 shr
+    dup1 __FUNC_SIG(addLiquidity) eq addLiquidityJump jumpi
+    dup1 __FUNC_SIG(tokenAddress) eq tokenAddress jumpi
+    dup1 __FUNC_SIG(factory) eq factory jumpi
+
+
+    dup1 __FUNC_SIG(decimals) eq decimalsJump jumpi
+    //dup1 __FUNC_SIG(DOMAIN_SEPARATOR) eq domainSeparatorJump jumpi
+
+   
+
+    ERC20_MAIN()
+
+
+    dup1 __FUNC_SIG(initialize) eq initializeJump jumpi
+
+
+    tokenAddress:
+        TOKEN_ADDRESS()
+
+    factory:
+        FACTORY()
+
+    decimalsJump:
+        DECIMALS()
+
+    initializeJump:
+        INITIALIZE()
+
+    addLiquidityJump:
+        ADDLIQUIDITY()
+
+    // Revert if no selector matches
+    0x00 0x00 revert
+}
