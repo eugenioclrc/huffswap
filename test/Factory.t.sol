@@ -101,24 +101,7 @@ contract FactoryTest is Test {
         
     }
 
-     function testAddLiquidity() public {
-        IFactory _factory = IFactory(factory);
-        address _token = address(token);
-        
-        address _exchange = _factory.createExchange(_token);
-        IExchange(_exchange).addLiquidity{value: 1000}(1, 1000, block.timestamp + 100);
-
-
-        
-    }
-        
-
     function testSetAndGetValueAdr() public {
-        console.log("Factory", factory);
-        console.log("Exchange", exchange);
-        console.log("Token", address(token));
-        console.log("Token2", address(token2));
-
         IFactory _factory = IFactory(factory);
         address _token = address(token);
 
@@ -150,7 +133,7 @@ contract FactoryTest is Test {
         address t = address(token);
         uint256 g = gasleft();
         address e = IFactory(factory).createExchange(t);
-console.log("totalgas",g - gasleft());
+        console.log("totalgas create exchange",g - gasleft());
         assertEq(IExchange(e).factory(), factory, "Factory address should be the same");
     
 
