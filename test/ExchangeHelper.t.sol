@@ -51,10 +51,6 @@ contract ExchangeHelperTest is Test {
     function calcLiquidity(uint256 total_liquidity, uint256 eth_reserve, uint256 token_reserve, uint256 maxTokens, uint256 value) internal  
      returns(uint256 liquidity_minted, uint256 token_amount)
     {
-
-        console.log(value, "*");
-        console.log( token_reserve, "/");
-        console.log(eth_reserve);
         if (total_liquidity > 0) {
             // nB = (B * nA) / A
             token_amount = value * token_reserve / eth_reserve;
