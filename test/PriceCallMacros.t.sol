@@ -207,24 +207,27 @@ contract PriceCallMacrosTest is Test {
         uint256 value = 10 ether;
 
         vm.prank(user);
-        uint256 expected = exchange.ethToTokenSwapInput{value: value}(
-            min_tokens,
-            deadline,
-            user,
-            address(token)
-        );
+        uint256 expectedTokenBought = exchange.ethToTokenSwapInput{
+            value: value
+        }(min_tokens, deadline, user, address(token));
+        uint256 expectedTokenBalance = token.balanceOf(user);
+        uint256 expectedEthBalance = address(user).balance;
 
         _resetBalances();
 
         vm.prank(user);
-        uint256 actual = helper.ethToTokenSwapInput{value: value}(
+        uint256 actualTokenBought = helper.ethToTokenSwapInput{value: value}(
             min_tokens,
             deadline,
             user,
             address(token)
         );
+        uint256 actualTokenBalance = token.balanceOf(user);
+        uint256 actualEthBalance = address(user).balance;
 
-        assertEq(expected, actual);
+        assertEq(expectedTokenBought, actualTokenBought);
+        assertEq(expectedEthBalance, actualEthBalance);
+        assertEq(expectedTokenBalance, actualTokenBalance);
     }
 
     function test_tokenToEthSwapInput() external {
@@ -233,26 +236,32 @@ contract PriceCallMacrosTest is Test {
         uint256 deadline = block.timestamp + 1 days;
 
         vm.prank(user);
-        uint256 expected = helper.tokenToEthSwapInput(
+        uint256 expectedEthBought = helper.tokenToEthSwapInput(
             tokens_sold,
             min_eth,
             deadline,
             user,
             address(token)
         );
+        uint256 expectedTokenBalance = token.balanceOf(user);
+        uint256 expectedEthBalance = address(user).balance;
 
         _resetBalances();
 
         vm.prank(user);
-        uint256 actual = exchange.tokenToEthSwapInput(
+        uint256 actualEthBought = exchange.tokenToEthSwapInput(
             tokens_sold,
             min_eth,
             deadline,
             user,
             address(token)
         );
+        uint256 actualTokenBalance = token.balanceOf(user);
+        uint256 actualEthBalance = address(user).balance;
 
-        assertEq(expected, actual);
+        assertEq(expectedEthBought, actualEthBought);
+        assertEq(expectedEthBalance, actualEthBalance);
+        assertEq(expectedTokenBalance, actualTokenBalance);
     }
 
     function test_getEthToTokenInputPrice() external {
