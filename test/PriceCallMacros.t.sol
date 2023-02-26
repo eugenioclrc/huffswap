@@ -57,6 +57,9 @@ contract PriceCallMacros {
             address(this).balance - msg.value,
             token_reserve
         );
+        // uint256 input_amount,
+        // uint256 input_reserve,
+        // uint256 output_reserve
         if (tokens_bought < min_tokens) {
             revert ErrTokensOutpur(min_tokens);
         }
@@ -215,8 +218,6 @@ contract PriceCallMacrosTest is Test {
             user,
             address(token)
         );
-
-        console.log(expected, actual);
 
         assertEq(expected, actual);
     }

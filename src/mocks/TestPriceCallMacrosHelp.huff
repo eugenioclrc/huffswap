@@ -72,11 +72,10 @@
     return
 
   ethToTokenSwapInputJump:
-    // todo: fix order
-    0x04 calldataload
-    0x24 calldataload
-    0x44 calldataload
-    0x64 calldataload
+    0x64 calldataload   // [tokenAddress]
+    0x44 calldataload   // [recipient, tokenAddress]
+    0x04 calldataload   // [minTokens, recipient, tokenAddress]
+    0x24 calldataload   // [deadline, minTokens, recipient, tokenAddress]
 
     ETH_TO_TOKEN_SWAP_INPUT()   // [ethBought]
 
@@ -86,7 +85,6 @@
     0x20
     0x00
     return
-
 
   0x00 0x00 revert
 }

@@ -1,18 +1,85 @@
 #include "huffmate/utils/CommonErrors.huff"
+#include "huffmate/utils/SafeTransferLib.huff"
 
 #define function balanceOf(address) view returns (uint256)
 
 #define error ErrDeadlineExpired(uint256)
 #define error ErrEthOutput(uint256, uint256)
+#define error ErrTokensOutput(uint256)
 
 #define event EthPurchase(address indexed buyer, address recipient, uint256 tokens_sold, uint256 eth_bought)
+#define event TokenPurchase(address indexed buyer, address recipient, uint256 eth_sold, uint256 tokens_bought)
 
 #define macro ETH_TO_TOKEN_SWAP_INPUT() = takes(4) returns(1) {
-  pop
-  pop
-  pop
-  pop
-  0x20
+  // Input Stack:   [deadline, minTokens, recipient, tokenAddress]
+  // Output Stack:  [tokensBought]
+
+  // deadline >= block.timestamp
+  VALIDATE_DEADLINE()     // [minTokens, recipient, tokenAddress]
+
+  // msg.value != 0
+  callvalue               
+  IS_NOT_ZERO()           // [minTokens, recipient, tokenAddress]
+
+  // minTokens != 0
+  dup1
+  IS_NOT_ZERO()           // [minTokens, recipient, tokenAddress]
+
+  dup3
+  address           
+  GET_TOKEN_BALANCE_OF_STATIC()   // [tokenReseve, minTokens, recipient, tokenAddress]
+
+  callvalue
+  selfbalance
+  sub               // [ethReserve, tokenReseve, minTokens, recipient, tokenAddress]
+
+  callvalue         // [msg.sender, ethReserve, tokenReseve, minTokens, recipient, tokenAddress]
+  swap2             // [tokenReserve, ethReserve, msg.sender, tokenReseve, minTokens, recipient, tokenAddress]
+  GET_INPUT_PRICE() // [tokensBought, minTokens, recipient, tokenAddress]
+
+  swap1             // [minTokens, tokensBought, recipient, tokenAddress]
+  dup2 dup2 lt      // [minTokensLessThanTokensBought, minTokens, tokensBought, recipient, tokenAddress]      
+  dup3 dup3 eq      // [minTokensEqualTokensBought, minTokensLessThanTokensBought, minTokens, tokensBought, recipient, tokenAddress]      
+  or                // [validTokensBought, minTokens, tokensBought, recipient, tokenAddress]
+
+  _continue
+  jumpi
+  dup2
+  // throw error
+  __ERROR(ErrTokensOutput)          // [signature, minTokens, tokensBought, recipient, tokenAddress]
+  0x00 
+  mstore                            // [minTokens, tokensBought, recipient, tokenAddress]
+  0x04
+  mstore                            // [tokensBought, recipient, tokenAddress]]
+
+  0x24
+  0x00
+  revert
+
+  _continue:              // [minTokens, tokensBought, recipient, tokenAddress]
+    pop                   // [tokensBought, recipient, tokenAddress]
+
+    swap2                 // [tokenAddress, recipient, tokensBought]
+    dup3                  // [tokensBought, tokenAddress, recipient, tokensBought]
+    dup3                  // [recipient, tokensBought, tokenAddress, recipient, tokensBought]
+
+    SAFE_TRANSFER(0x00)   // [recipient, tokensBought]
+
+    // cleaning stack
+    pop
+
+
+
+    // todo: emit event
+    // __EVENT_HASH(TokenPurchase) // [event_hash, caller, minEth, tokenAddress, ethBought]
+    // 0x00
+    // 0x40
+    // log2            // [minEth, tokenAddress, ethBought]
+
+    // pop
+    // pop
+    // pop
+    // 0x20
 }
 
 #define macro TOKEN_TO_ETH_SWAP_INPUT() = takes(5) returns(0) {
@@ -29,21 +96,15 @@
 
   // minEth != 0
   dup2                    // [minEth, tokensSold, minEth, tokenAddress, tokenRecipient]
-  IS_NOT_ZERO()           // [tokensSold, minEth, tokenAddress, tokenRecipient]
-
-   
+  IS_NOT_ZERO()           // [tokensSold, minEth, tokenAddress, tokenRecipient]   
 
   dup3                    // [tokenAddress, tokensSold, minEth, tokenAddress, tokenRecipient]
   address                 // [self, tokenAddress, tokensSold, minEth, tokenAddress, tokenRecipient]
 
   GET_TOKEN_BALANCE_OF_STATIC()   // [tokenReserve, tokensSold, minEth, tokenAddress, tokenRecipient]
 
-  selfbalance               // [balance, tokenReserve, tokensSold, minEth, tokenAddress, tokenRecipient]
-
-  swap1                     // [tokenReserve, balance, tokensSold, minEth, tokenAddress, tokenRecipient]
-  swap3                     // [tokensSold, balance, tokenReserve, minEth, tokenAddress, tokenRecipient]
+  selfbalance               // [ethBalance, tokenReserve, tokensSold, minEth, tokenAddress, tokenRecipient]
   
-  // todo: getting the wrong value
   GET_INPUT_PRICE()         // [ethBought, minEth, tokenAddress, tokenRecipient]
 
   dup3                      // [minEth, ethBought, tokensSold, minEth, tokenAddress, tokenRecipient]
@@ -54,11 +115,11 @@
   dup3                      // [tokensSold, tokenAddress, ethBought, tokensSold, minEth, tokenAddress, tokenRecipient]
   address                   // [selfAddress, tokensSold, tokenAddress, ethBought, tokensSold, minEth, tokenAddress, tokenRecipient]
   caller                    // [caller, selfAddress, tokensSold, tokenAddress, ethBought, tokensSold, minEth, tokenAddress, tokenRecipient]
-  TRANSFER_FROM_CALL()      // [ethBought, tokensSold, minEth, tokenAddress, tokenRecipient]
+  SAFE_TRANSFER_FROM(0x00)  // [ethBought, tokensSold, minEth, tokenAddress, tokenRecipient]
 
   dup1                      // [ethBought, ethBought, tokensSold, minEth, tokenAddress, tokenRecipient]
   dup6                      // [tokenRecipient, ethBought, ethBought, tokensSold, minEth, tokenAddress, tokenRecipient]
-  SEND_ETHER()              // [ethBought, tokensSold, minEth, tokenAddress, tokenRecipient]
+  SAFE_TRANSFER_ETH()
  
   dup1                      // [ethBought, ethBought, tokensSold, minEth, tokenAddress, tokenRecipient]
 
@@ -85,31 +146,6 @@
 
   pop
   pop
-}
-
-#define macro SEND_ETHER() = takes(2) returns(0) {
-  // Input Stack:  [to, amount]
-  // Output Stack: []
-
-  0x20      // [retSize, to, amount]
-  0x00      // [retOffset, retSize, to, amount]
-  0x00      // [argsSize, retOffset, retSize, to, amount]
-  0x00      // [argsOffset, argsSize, retOffset, retSize, to, amount]  
-  
-  dup6      // [amount, argsOffset, argsSize, retOffset, retSize, to, amount]  
-  dup6      // [to, amount, argsOffset, argsSize, retOffset, retSize, to, amount]  
-
-  gas       // [gas, to, amount, argsOffset, argsSize, retOffset, retSize, to, amount]  
-  
-  call      // [success, to, amount]
-
-  // Revert if call is unsuccessful
-  iszero iszero _success jumpi
-  0x00 dup1 revert
-  
-  _success:             // [to, amount]
-    pop
-    pop // clean stack
 }
 
 #define macro VALIDATE_ETH_RECEIVE() = takes(2) returns(0) {
@@ -190,8 +226,14 @@
   mul           // [input_reserve_x_1000, numerator, input_amount_with_fee, input_reserve, input_amount]
   dup3          // [input_amount_with_fee, input_reserve_x_1000, numerator, input_amount_with_fee, input_reserve, input_amount]
   add           // [denominator, numerator, input_amount_with_fee, input_reserve, input_amount]
-  swap1         // [numerator, denominator]
-  div           // [price]
+  swap1         // [numerator, denominator, input_amount_with_fee, input_reserve, input_amount]
+  div           // [price, input_amount_with_fee, input_reserve, input_amount]
+  
+  // cleaning stack
+  swap3
+  pop
+  pop
+  pop
 }
 
 #define macro GET_TOKEN_TO_ETH_INPUT_PRICE() = takes(2) returns(1) {
@@ -202,9 +244,9 @@
     IS_NOT_ADDRESS_ZERO()
 
     address       // [fromAddress, tokenAddress, tokenSold]
-    GET_TOKEN_BALANCE_OF_STATIC()   // [totalReserve, tokenSold]
+    GET_TOKEN_BALANCE_OF_STATIC()   // [tokenReserve, tokenSold]
 
-    selfbalance         // [balance, totalReserve, tokensSold]
+    selfbalance         // [ethBalance, tokenReserve, tokensSold]
 
     GET_INPUT_PRICE()   // [price]
 }
@@ -226,7 +268,7 @@
 
     selfbalance         // [balance, totalReserve, ethSold]
 
-    swap1
+    swap1               // [totalReserve, balance, ethSold]
 
     GET_INPUT_PRICE()   // [price]
 }
@@ -235,8 +277,6 @@
   // Input Stack: [value]
   // Output Stack: []
 
-  iszero        // [is_zero]
-  not           // [is_not_zero]
   _continue   
   jumpi
   ZERO_ASSETS(0x00)
@@ -248,9 +288,6 @@
   // Input Stack: [address]
   // Output Stack: []
 
-  0x00          // [0x00, address]
-  eq            // [is_address(0)]
-  not           // [is_not_address(0)]
   _continue 
   jumpi
   ZERO_ADDRESS(0x00)
@@ -287,107 +324,7 @@
   0x00 dup1 revert
   
   _success:             // [tokenAddress]
-    pop
+    pop // cleaning stack
     0x00
-    mload               // [balance, tokenAddress] 
-}
-
-#define macro TRANSFER_FROM_CALL() = takes(4) returns(1) {
-    // Input Stack:  [from, to, amount, tokenAddress]
-    // Output Stack: []
-
-    // save function signature
-    __FUNC_SIG(transferFrom)
-    0xE0 shl
-    0x00 mstore
-
-    // from
-    0x04
-    mstore
-
-    // to
-    0x24
-    mstore
-
-    // amount
-    0x44
-    mstore
-
-    0x20      // [retSize, tokenAddress]
-    0x00      // [retOffset, retSize, tokenAddress]
-    0x64      // [argsSize, retOffset, retSize, tokenAddress]
-    0x00      // [argsOffset, argsSize, retOffset, retSize, tokenAddress]  
-    
-    0x00      // [callvalue, argsOffset, argsSize, retOffset, retSize, tokenAddress]  
-
-    dup6      // [tokenAddress, callvalue, argsOffset, argsSize, retOffset, retSize, tokenAddress]  
-    
-    gas       // [gas, tokenAddress, callvalue, argsOffset, argsSize, retOffset, retSize, tokenAddress]  
-    
-    call      // [success, tokenAddress]
-
-    // Revert if call is unsuccessful
-    iszero iszero _success jumpi
-    0x00 dup1 revert
-
-    _success:  // []
-      pop   // clean stack
-}
-
-#define macro SAFE_TRANSFER_FROM() = takes(4) returns(1) {
-    // Input Stack:  [from, to, amount, tokenAddress]
-    // Output Stack: []
-
-    // save function signature
-    __FUNC_SIG(transferFrom)
-    0xE0 shl
-    0x00 mstore
-
-    // from
-    0x04
-    mstore
-
-    // to
-    0x24
-    mstore
-
-    // amount
-    0x44
-    mstore
-
-    0x20      // [retSize, tokenAddress]
-    0x00      // [retOffset, retSize, tokenAddress]
-    0x64      // [argsSize, retOffset, retSize, tokenAddress]
-    0x00      // [argsOffset, argsSize, retOffset, retSize, tokenAddress]  
-    
-    0x00      // [callvalue, argsOffset, argsSize, retOffset, retSize, tokenAddress]  
-
-    dup6      // [tokenAddress, callvalue, argsOffset, argsSize, retOffset, retSize, tokenAddress]  
-    
-    gas       // [gas, tokenAddress, callvalue, argsOffset, argsSize, retOffset, retSize, tokenAddress]  
-    
-    call      // [success, tokenAddress]
-
-    // Revert if call is unsuccessful
-    iszero iszero _success jumpi
-    0x00 dup1 revert
-    
-    _success:             // []
-      pop
-      0x00
-      mload               // [success]
-
-      iszero              // [successIsFalse]
-      not                 // [successIsNotFalse]
-      
-      returndatasize      // [returnDataSize, successIsNotFalse]
-      iszero              // [returnDataSizeIsZero, successIsNotFalse]
-      or                  // [transferFailed]
-      iszero              // [transferHasNotFailed]
-      _finish
-      jumpi
-
-      
-
-      _finish:
+    mload               // [balance] 
 }
