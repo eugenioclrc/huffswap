@@ -80,7 +80,7 @@
     0x44 calldataload // deadline
     timestamp lt __deadlineOk jumpi 
     // write a better revert message 
-    0x00 0x00 revert
+    0x00 dup1 revert
     __deadlineOk:
 
     // current stack    [max_tokens, min_liquidity]

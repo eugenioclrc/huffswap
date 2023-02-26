@@ -59,4 +59,22 @@ contract FactoryAddTest is Test {
         IExchange(_exchange).addLiquidity{value: 1000}(1, 1010, block.timestamp + 99); 
 
     }
+
+    function testGasAddLiquidity() public {
+        IFactory _factory = IFactory(factory);
+        address _token = address(token);
+        
+        address _exchange = _factory.createExchange(_token);
+
+        token.approve(_exchange, type(uint256).max);
+        uint256 gas = gasleft();
+        IExchange(_exchange).addLiquidity{value: 1000}(1, 1010, block.timestamp + 99); 
+        gas = gas - gasleft();
+        console.log("Total gas spend adding liquidity", gas);
+
+        gas = gasleft();
+        IExchange(_exchange).addLiquidity{value: 1000}(1, 1010, block.timestamp + 99); 
+        gas = gas - gasleft();
+        console.log("Total gas spend adding liquidity", gas);
+    }
 }

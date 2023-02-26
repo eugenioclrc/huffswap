@@ -289,7 +289,7 @@
   _success:             // [tokenAddress]
     pop
     0x00
-    mload               // [balance, tokenAddress] 
+    mload               // [balance] 
 }
 
 #define macro TRANSFER_FROM_CALL() = takes(4) returns(1) {
