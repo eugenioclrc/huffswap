@@ -1,4 +1,4 @@
-#include "../PriceCallMacros.huff"
+#include "../SwapHelp.huff"
 
 #define function getInputPrice(uint256, uint256, uint256) nonpayable returns (uint256)
 #define function getTokenToEthInputPrice(uint256, address) nonpayable returns (uint256)

@@ -6,12 +6,13 @@ import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
 import {ERC20} from "solmate/tokens/ERC20.sol";
+import {Token} from "src/mocks/Token.sol";
 
 contract PriceCallMacros {
-    StandardToken public token;
+    Token public token;
 
     constructor(address _tokenAddress) {
-        token = StandardToken(_tokenAddress);
+        token = Token(_tokenAddress);
     }
 
     /* events */
@@ -155,12 +156,8 @@ contract PriceCallMacros {
     }
 }
 
-contract StandardToken is ERC20 {
-    constructor() ERC20("ss", "ss", 18) {}
-}
-
 contract PriceCallMacrosTest is Test {
-    StandardToken public token;
+    Token public token;
     PriceCallMacros public helper;
     PriceCallMacros public exchange;
 
@@ -170,9 +167,9 @@ contract PriceCallMacrosTest is Test {
     address user = makeAddr("user");
 
     function setUp() public {
-        token = new StandardToken();
+        token = new Token("token", "tkn");
         helper = PriceCallMacros(
-            HuffDeployer.config().deploy("mocks/TestPriceCallMacrosHelp")
+            HuffDeployer.config().deploy("mocks/TestSwapHelp")
         );
         exchange = new PriceCallMacros(address(token));
 
