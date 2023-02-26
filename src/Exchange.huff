@@ -66,9 +66,11 @@
 
     // require(min_liquidity > 0)
     0x04 calldataload // min_liquidity
+    /*
     dup1 __minLiquidityOk jumpi 
     ZERO_ASSETS(0x00)
     __minLiquidityOk:
+    */
     
     // require(max_tokens > 0)
     0x24 calldataload // max_tokens
@@ -115,7 +117,7 @@
     swap4
 
     // min_liquidity, liquidity_to_mint, address, tokens_to_transfer, liquidity_to_mint
-    0x01 swap1 sub    // min_liquidity -1, liquidity_to_mint, address, tokens_to_transfer, liquidity_to_mint
+    // 0x01 swap1 sub    // min_liquidity -1, liquidity_to_mint, address, tokens_to_transfer, liquidity_to_mint
     lt __minSlippeageOk jumpi
         NOT_MINTED(0x00)
     __minSlippeageOk:
