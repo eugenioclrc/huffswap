@@ -62,24 +62,31 @@
     swap2                 // [tokenAddress, recipient, tokensBought]
     dup3                  // [tokensBought, tokenAddress, recipient, tokensBought]
     dup3                  // [recipient, tokensBought, tokenAddress, recipient, tokensBought]
-
     SAFE_TRANSFER(0x00)   // [recipient, tokensBought]
 
-    // cleaning stack
-    pop
+    // (address indexed buyer, address recipient, uint256 eth_sold, uint256 tokens_bought)
 
+    // EVENT
+    // todo: fix event
+    // recipient
+    0x00
+    mstore            // [tokensBought]
 
+    // eth_sold
+    callvalue
+    0x20
+    mstore
 
-    // todo: emit event
-    // __EVENT_HASH(TokenPurchase) // [event_hash, caller, minEth, tokenAddress, ethBought]
-    // 0x00
-    // 0x40
-    // log2            // [minEth, tokenAddress, ethBought]
+    // tokensBought
+    dup1
+    0x40
+    mstore            // [tokensBought]
 
-    // pop
-    // pop
-    // pop
-    // 0x20
+    caller
+    __EVENT_HASH(TokenPurchase)       // [event_hash, caller, tokensBought]
+    0x00
+    0x60
+    log2  
 }
 
 #define macro TOKEN_TO_ETH_SWAP_INPUT() = takes(5) returns(0) {
@@ -140,7 +147,7 @@
 
   caller                          // [msg.sender]
   
-  __EVENT_HASH(EthPurchase)       // [event_hash, caller]
+  __EVENT_HASH(EthPurchase)       // [event_hash, msg.sender]
   0x00
   0x40
   log2                            // []

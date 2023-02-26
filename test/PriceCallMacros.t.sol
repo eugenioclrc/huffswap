@@ -193,6 +193,11 @@ contract PriceCallMacrosTest is Test {
 
         deal(user, 100 ether);
         deal(address(token), user, 76 ether);
+
+        vm.startPrank(user);
+        token.approve(address(exchange), type(uint256).max);
+        token.approve(address(helper), type(uint256).max);
+        vm.stopPrank();
     }
 
     function test_ethToTokenSwapInput() external {
@@ -226,64 +231,32 @@ contract PriceCallMacrosTest is Test {
         uint256 tokens_sold = 65 ether;
         uint256 min_eth = 1 ether;
         uint256 deadline = block.timestamp + 1 days;
-        address tokenAddress = address(token);
 
-        address recipient = makeAddr("recipient");
-
-        deal(recipient, 100000 ether);
-        deal(address(token), recipient, 100000 ether);
-
-        vm.startPrank(recipient);
-        token.approve(address(exchange), type(uint256).max);
-        token.approve(address(helper), type(uint256).max);
-        vm.stopPrank();
-
-        uint256 balance = 999 ether;
-        uint256 tokenBalance = 800 ether;
-
-        deal(address(exchange), balance);
-        deal(address(token), address(exchange), tokenBalance);
-
-        deal(address(helper), balance);
-        deal(address(token), address(helper), tokenBalance);
-
-        vm.prank(recipient);
+        vm.prank(user);
         uint256 expected = helper.tokenToEthSwapInput(
             tokens_sold,
             min_eth,
             deadline,
-            recipient,
-            tokenAddress
+            user,
+            address(token)
         );
 
-        deal(address(exchange), balance);
-        deal(address(token), address(exchange), tokenBalance);
+        _resetBalances();
 
-        deal(address(helper), balance);
-        deal(address(token), address(helper), tokenBalance);
-
-        vm.prank(recipient);
+        vm.prank(user);
         uint256 actual = exchange.tokenToEthSwapInput(
             tokens_sold,
             min_eth,
             deadline,
-            recipient,
-            tokenAddress
+            user,
+            address(token)
         );
 
         assertEq(expected, actual);
     }
 
     function test_getEthToTokenInputPrice() external {
-        uint256 balance = 10 ether;
-        uint256 tokenBalance = 5 ether;
         uint256 ethSold = 1 ether;
-
-        deal(address(exchange), balance);
-        deal(address(token), address(exchange), tokenBalance);
-
-        deal(address(helper), balance);
-        deal(address(token), address(helper), tokenBalance);
 
         uint256 expected = exchange.getEthToTokenInputPrice(
             ethSold,
