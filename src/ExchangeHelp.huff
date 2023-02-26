@@ -32,14 +32,16 @@
     pop 0x00 mload                  // [total_assets]
 }
 
-#define macro CALCULATE_TRANSFERS_FOR_LIQUIDITY() = takes (3) returns (2) {
+#define macro CALCULATE_TRANSFERS_FOR_LIQUIDITY() = takes (3) returns (3) {
     // Input Stack: [total_supplyLP, max_tokens, address token]
-    // Output Stack: [tokens_to_transfer, liquidity_to_mint]
+    // Output Stack: [tokens_to_transfer, liquidity_to_mint, address]
     dup1 __notFirstAdd jumpi   
-    
-    callvalue // [value, total_supplyLP, max_tokens, address token]
-    dup3      // [max_tokens = tokens to transfer, value = liquidity to mint]
-    // return [max_tokens, eth_balance]
+    pop
+    // [value, max_tokens, address token]
+
+    callvalue // [value, max_tokens, address token]
+    swap1
+    // [max_tokens, value, address token]
     __end jump
     
     
@@ -56,26 +58,34 @@
     dup4
     TOTAL_ASSETS_INNER()
 
-    // [token_reserve, eth_reserve, total_supplyLP, max_tokens]
+    // [token_reserve, eth_reserve, total_supplyLP, max_tokens, address]
 
     // token_amount = msg.value * token_reserve / eth_reserve;
     callvalue mul
-    // [token_reserve * msg.value, eth_reserve, total_supplyLP, max_tokens]
+    // [token_reserve * msg.value, eth_reserve, total_supplyLP, max_tokens, address]
     
     dup2 swap1 div 
-    // [token_amount_effective, eth_reserve, total_supplyLP, max_tokens]
-    //__end jump
+    // [token_amount_effective, eth_reserve, total_supplyLP, max_tokens, address]
+
     // liquidity_minted = msg.value * total_supplyLP / eth_reserve;
     dup3
-
-    // [total_supplyLP, token_amount_effective, eth_reserve, max_tokens] 
+    // [total_supplyLP, token_amount_effective, eth_reserve, max_tokens, address] 
     callvalue mul
 
-    // [total_supplyLP * msg.value, token_amount, eth_reserve, max_tokens] 
+    // [total_supplyLP * msg.value, token_amount, eth_reserve, max_tokens, address] 
     dup3 swap1 div
-    // [total_supplyLP * msg.value/ eth_reserve, token_amount, eth_reserve, max_tokens] 
-    swap1
-    // [liquidityTo mint, token_amount, eth_reserve, total_supplyLP, max_tokens]
+    // [total_supplyLP * msg.value/ eth_reserve, token_amount, eth_reserve, max_tokens, address]  
+    
+    
+    // [liquidityTo mint, token_amount, eth_reserve, total_supplyLP, max_tokens, address] 
+    swap2 pop
+    // [token_amount, liquidityTo mint, total_supplyLP, max_tokens, address] 
+    swap2 pop
+    // [liquidityTo mint, token_amount, max_tokens, address] 
+    swap2 pop
+    // [token_amount, liquidityTo mint, address] 
+
+
 
     __end:
 }

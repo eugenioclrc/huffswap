@@ -88,66 +88,56 @@
     LOCK()
 
     0x00 GET_ARG_ADDRESS()
-    dup1
-
-    // [address,address,max_tokens, min_liquidity]
-    dup3
-    // [max_tokens,address,address,max_tokens, min_liquidity]
+    // current stack    [address, max_tokens, min_liquidity]
+    dup2
+    // current stack    [max_tokens, address, max_tokens, min_liquidity]
     
     
     [TOTAL_SUPPLY_SLOT] sload
-    // [supplylp, max_tokens,address,address,max_tokens, min_liquidity]
-
-
+    // [supplylp, max_tokens ,address, max_tokens, min_liquidity]
+ 
     // Input Stack: [total_supplyLP, max_tokens, address token]
     CALCULATE_TRANSFERS_FOR_LIQUIDITY()
-    // Output Stack: [tokens_to_transfer, liquidity_to_mint,address,max_tokens, min_liquidity
-    dup2 //  [tokens_to_transfer, tokens_to_transfer, liquidity_to_mint,address,max_tokens, min_liquidity
-    swap4 //  [max_tokens, tokens_to_transfer, tokens_to_transfer, liquidity_to_mint,address, min_liquidity
-    pop pop
-    /*
 
-    ver estos checkeos
-    dup2
-    gt __minTokenTransferOk jumpi 
+    // [tokens_to_transfer, liquidity_to_mint, address, max_tokens, min_liquidity
+
+    dup1 //  [tokens_to_transfer, tokens_to_transfer, liquidity_to_mint, address, max_tokens, min_liquidity
+    swap4 //  [ max_tokens, tokens_to_transfer, liquidity_to_mint, address, tokens_to_transfer, min_liquidity
+    0x01 swap1 sub // [ max_tokens-1 , tokens_to_transfer, liquidity_to_mint, address, tokens_to_transfer, min_liquidity
+    lt __minTokenTransferOk jumpi 
     0x00 0x00 revert
     __minTokenTransferOk:
 
-    0x29
-    0x00 mstore
-    0x20 0x00 return
-    stop
-    */
-
+    // liquidity_to_mint, address, tokens_to_transfer, min_liquidity
     
-    //  [tokens_to_transfer, liquidity_to_mint,address, min_liquidity
-    dup2
-    //  [liquidity_to_mint, tokens_to_transfer, liquidity_to_mint,address, min_liquidity
+    dup1
+    // liquidity_to_mint, liquidity_to_mint, address, tokens_to_transfer, min_liquidity
     swap4
-    //  [min_liquidity, liquidity_to_mint, tokens_to_transfer, liquidity_to_mint,address, 
 
-/*
-
-verestos checkeos
-    gt jumpi __minSlippeageOk
+    // min_liquidity, liquidity_to_mint, address, tokens_to_transfer, liquidity_to_mint
+    0x01 swap1 sub    // min_liquidity -1, liquidity_to_mint, address, tokens_to_transfer, liquidity_to_mint
+    lt __minSlippeageOk jumpi
         NOT_MINTED(0x00)
     __minSlippeageOk:
 
-    */
-    //  [tokens_to_transfer, liquidity_to_mint, 
-
-    swap2
-    //  [address,tokens_to_transfer, liquidity_to_mint, 
+    //  address, tokens_to_transfer, liquidity_to_mint
     dup2
-    //  [tokens_to_transfer,address,tokens_to_transfer, liquidity_to_mint, 
+    // tokens_to_transfer, address, tokens_to_transfer, liquidity_to_mint
+
     address
-    //  [this,tokens_to_transfer,address,tokens_to_transfer, liquidity_to_mint, 
+    //  [this, tokens_to_transfer, address, liquidity_to_mint
     caller
-    //  [sender,this,tokens_to_transfer,address,tokens_to_transfer, liquidity_to_mint, 
+    //  [sender,this,tokens_to_transfer, address, liquidity_to_mint
 
     SAFE_TRANSFER_FROM(0x00)
+
     //  [tokens_to_transfer, liquidity_to_mint, 
-    dup2 caller _MINT()
+    swap1
+    //  [liquidity_to_mint, tokens_to_transfer
+    dup1
+    //  [liquidity_to_mint, liquidity_to_mint, tokens_to_transfer
+
+    caller dup2 _MINT()
     
 
     UNLOCK()
