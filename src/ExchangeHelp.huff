@@ -6,6 +6,40 @@
     GET_TOKEN_BALANCE_OF_STATIC()
 }
 
+#define macro CALCULATE_TRANSFERS_REMOVE_FOR_LIQUIDITY() = takes (3) returns (2) {
+    // Input Stack: [total_supplyLP, amount_remove, address token]
+    // return stack eth_amount, token_amount
+
+    swap2 //[token, amount_remove, total_supplyLP]
+    address
+    GET_TOKEN_BALANCE_OF_STATIC()
+
+    // token_amount = amount * token_reserve / total_liquidity;
+    // 
+
+    //[token balance, amount_remove, total_supplyLP]
+    dup2 mul
+    // [token balance*amount_remove, amount_remove, total_supplyLP]
+    dup3 div
+    // [token_amount, amount_remove, total_supplyLP]
+    // eth_amount = amount * address(this).balance / total_liquidity;
+    
+    swap1
+    // [amount_remove, token_amount, total_supplyLP]
+
+    balance mul
+    // [amount_remove * balance, token_amount, total_supplyLP]
+    dup3 div
+    // [amount_remove * balance / total_supplyLP, token_amount, total_supplyLP]
+    // [eth_amount, token_amount, total_supplyLP]
+    swap2
+    // [total_supplyLP, token_amount, eth_amount]
+    pop
+    // [token_amount, eth_amount]
+
+}
+
+
 #define macro CALCULATE_TRANSFERS_FOR_LIQUIDITY() = takes (3) returns (3) {
     // Input Stack: [total_supplyLP, max_tokens, address token]
     // Output Stack: [tokens_to_transfer, liquidity_to_mint, address]
