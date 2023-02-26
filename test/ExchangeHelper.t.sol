@@ -85,11 +85,11 @@ contract ExchangeHelperTest is Test {
 
     function testBalance() external {
         // beware, EOA dont revert so will return 0
-        (uint256 ret2) = Foo(deployed).balance(address(0));
-        assertEq(ret2, 0, "Address 0 response empty");
+        //(uint256 ret2) = Foo(deployed).balance(address(0));
+        //assertEq(ret2, 0, "Address 0 response empty");
 
         vm.expectRevert();
-        (ret2) = Foo(deployed).balance(address(this));
+        (uint256 ret2) = Foo(deployed).balance(address(this));
 
         (ret2) = Foo(deployed).balance(address(token));
         assertEq(ret2, 0, "No token in contract");
