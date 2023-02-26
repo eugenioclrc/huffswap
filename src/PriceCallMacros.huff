@@ -87,65 +87,63 @@
   // Output Stack:  [ethBought]
 
   // deadline >= block.timestamp
-  VALIDATE_DEADLINE()     // [tokensSold, minEth, tokenAddress, tokenRecipient]
+  VALIDATE_DEADLINE()             // [tokensSold, minEth, tokenAddress, tokenRecipient]
 
   // tokensSold != 0
-  dup1                    // [tokensSold, tokensSold, minEth, tokenAddress, tokenRecipient]
-  IS_NOT_ZERO()           // [tokensSold, minEth, tokenAddress, tokenRecipient]
+  dup1                            // [tokensSold, tokensSold, minEth, tokenAddress, tokenRecipient]
+  IS_NOT_ZERO()                   // [tokensSold, minEth, tokenAddress, tokenRecipient]
 
 
   // minEth != 0
-  dup2                    // [minEth, tokensSold, minEth, tokenAddress, tokenRecipient]
-  IS_NOT_ZERO()           // [tokensSold, minEth, tokenAddress, tokenRecipient]   
+  dup2                            // [minEth, tokensSold, minEth, tokenAddress, tokenRecipient]
+  IS_NOT_ZERO()                   // [tokensSold, minEth, tokenAddress, tokenRecipient]
 
-  dup3                    // [tokenAddress, tokensSold, minEth, tokenAddress, tokenRecipient]
-  address                 // [self, tokenAddress, tokensSold, minEth, tokenAddress, tokenRecipient]
+  dup1                            // [tokensSold, tokensSold, minEth, tokenAddress, tokenRecipient]
 
-  GET_TOKEN_BALANCE_OF_STATIC()   // [tokenReserve, tokensSold, minEth, tokenAddress, tokenRecipient]
+  dup4                            // [tokenAddress, tokensSold, tokensSold, minEth, tokenAddress, tokenRecipient]
+  address                         // [address(this), tokenAddress, tokensSold, tokensSold, minEth, tokenAddress, tokenRecipient]
+  GET_TOKEN_BALANCE_OF_STATIC()   // [tokenReserve, tokensSold, tokensSold, minEth, tokenAddress, tokenRecipient]
 
-  selfbalance               // [ethBalance, tokenReserve, tokensSold, minEth, tokenAddress, tokenRecipient]
-  
-  GET_INPUT_PRICE()         // [ethBought, minEth, tokenAddress, tokenRecipient]
+  selfbalance                     // [ethBalance, tokenReserve, tokensSold, tokensSold, minEth, tokenAddress, tokenRecipient]
+  GET_INPUT_PRICE()               // [ethBought, tokensSold, minEth, tokenAddress, tokenRecipient]
 
-  dup3                      // [minEth, ethBought, tokensSold, minEth, tokenAddress, tokenRecipient]
-  dup2                      // [ethBought, minEth, ethBought, tokensSold, minEth, tokenAddress, tokenRecipient]
-  VALIDATE_ETH_RECEIVE()    // [ethBought, tokensSold, minEth, tokenAddress, tokenRecipient]
+  swap2                           // [minEth, tokensSold, ethBought, tokenAddress, tokenRecipient]
+  dup3                            // [ethBought, minEth, tokensSold, ethBought, tokenAddress, tokenRecipient]
+  VALIDATE_ETH_RECEIVE()          // [tokensSold, ethBought, tokenAddress, tokenRecipient]
 
-  dup4                      // [tokenAddress, ethBought, tokensSold, minEth, tokenAddress, tokenRecipient]
-  dup3                      // [tokensSold, tokenAddress, ethBought, tokensSold, minEth, tokenAddress, tokenRecipient]
-  address                   // [selfAddress, tokensSold, tokenAddress, ethBought, tokensSold, minEth, tokenAddress, tokenRecipient]
-  caller                    // [caller, selfAddress, tokensSold, tokenAddress, ethBought, tokensSold, minEth, tokenAddress, tokenRecipient]
-  SAFE_TRANSFER_FROM(0x00)  // [ethBought, tokensSold, minEth, tokenAddress, tokenRecipient]
+  // [msg.sender, address(this), tokensSold, tokenAddress]
+  swap2                           // [tokenAddress, ethBought, tokensSold, tokenRecipient]
+  dup3                            // [tokensSold, tokenAddress, ethBought, tokensSold, tokenRecipient]
+  address
+  caller                          // [msg.sender, address(this), tokensSold, tokenAddress, ethBought, tokensSold, tokenRecipient]
+  SAFE_TRANSFER_FROM(0x00)        // [ethBought, tokensSold, tokenRecipient]
 
-  dup1                      // [ethBought, ethBought, tokensSold, minEth, tokenAddress, tokenRecipient]
-  dup6                      // [tokenRecipient, ethBought, ethBought, tokensSold, minEth, tokenAddress, tokenRecipient]
-  SAFE_TRANSFER_ETH()
- 
-  dup1                      // [ethBought, ethBought, tokensSold, minEth, tokenAddress, tokenRecipient]
+  dup1                            // [ethBought, ethBought, tokensSold, tokenRecipient]
+  dup4                            // [tokenRecipient, ethBought, ethBought, tokensSold, tokenRecipient]
+  SAFE_TRANSFER_ETH()             // [ethBought, tokensSold, tokenRecipient]
 
-  // save ethBought in memory
+  dup1                            // [ethBought, ethBought, tokensSold, tokenRecipient]
+  swap3                           // [ethBought, tokensSold, tokenRecipient, ethBought]
+
+  // EVENT
+  // ethBought
   0x40
-  mstore              // [ethBought, tokensSold, minEth, tokenAddress, tokenRecipient]
+  mstore                          // [tokensSold, tokenRecipient]
 
-  // save tokensSold in memory
-  swap1
+  // tokensSold
   0x20
-  mstore              // [ethBought, minEth, tokenAddress, tokenRecipient]
+  mstore                          // [tokenRecipient]
 
-  // save tokenRecipient
-  swap4               // [tokenRecipient,  minEth, tokenAddress,  ethBought]
+  // tokenRecipient
   0x00
-  mstore              // [minEth, tokenAddress, ethBought]
+  mstore                          // []
 
-  caller              // [caller, minEth, tokenAddress, ethBought]
+  caller                          // [msg.sender]
   
-  __EVENT_HASH(EthPurchase) // [event_hash, caller, minEth, tokenAddress, ethBought]
+  __EVENT_HASH(EthPurchase)       // [event_hash, caller]
   0x00
   0x40
-  log2            // [minEth, tokenAddress, ethBought]
-
-  pop
-  pop
+  log2                            // []
 }
 
 #define macro VALIDATE_ETH_RECEIVE() = takes(2) returns(0) {
