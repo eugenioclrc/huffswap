@@ -23,6 +23,8 @@
 #define function tokenToEthSwapInput(uint256, uint256, uint256) nonpayable returns (uint256)
 #define function ethToTokenSwapInput(uint256, uint256) nonpayable returns (uint256)
 
+#define function tokenToTokenSwapInput(uint256 tokens_sold, uint256 min_tokens_bought, uint256 min_eth_bought, uint256 deadline, address token_addr) nonpayable returns (uint256 tokens_bought)
+
 #define event Initialized()
 
 #define constant FACTORY_ADDRESS = 0x0000000000000000000000000000000000000000
@@ -32,7 +34,6 @@
     0x00 mstore             // []
     0x20 0x00 return
 }
-
 
 #define macro FACTORY() = takes (0) returns (0) {
     0x00 [FACTORY_ADDRESS]  // [arg_addr]
@@ -268,6 +269,19 @@
     return
 }
 
+#define macro TOKEN_TO_TOKEN_SWAP_INPUT_WRAPPER() = takes(0) returns(0) {
+
+
+    TOKEN_TO_TOKEN_SWAP_INPUT()     // [tokensBought]
+
+    0x00
+    mstore
+
+    0x20
+    0x00
+    return
+}
+
 #define macro MAIN() = takes (0) returns (0) {
     pc calldataload 0xE0 shr
     dup1 __FUNC_SIG(addLiquidity) eq addLiquidityJump jumpi
@@ -283,11 +297,10 @@
     dup1 __FUNC_SIG("ethToTokenSwapInput(uint256,uint256,address)") eq ethToTokenSwapInputRecipientJump jumpi
     dup1 __FUNC_SIG(ethToTokenSwapInput) eq ethToTokenSwapInputJump jumpi
 
+    dup1 __FUNC_SIG(tokenToTokenSwapInput) eq tokenToTokenSwapInputJump jumpi
 
     dup1 __FUNC_SIG(decimals) eq decimalsJump jumpi
     //dup1 __FUNC_SIG(DOMAIN_SEPARATOR) eq domainSeparatorJump jumpi
-
-   
 
     ERC20_MAIN()
 
@@ -329,4 +342,7 @@
 
     ethToTokenSwapInputRecipientJump:
         ETH_TO_TOKEN_SWAP_INPUT_RECIPIENT_WRAPPER()
+
+    tokenToTokenSwapInputJump:
+        TOKEN_TO_TOKEN_SWAP_INPUT_WRAPPER()
 }
