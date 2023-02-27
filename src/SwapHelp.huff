@@ -325,7 +325,7 @@
   staticcall  // [success, tokenAddress]
 
   // Revert if call is unsuccessful
-  iszero iszero _success jumpi
+  _success jumpi
   0x00 dup1 revert
   
   _success:             // [tokenAddress]
