@@ -8,12 +8,10 @@ import "forge-std/console.sol";
 import {ERC20} from "solmate/tokens/ERC20.sol";
 
 interface Foo {
-    function balance(address token) external view returns (uint256 amount);
     function addLiquidity(uint256 lpMinted, uint256 maxAmountTokens, address token)
         external
         payable
         returns (uint256 amount, uint256 amount2);
-    function fund() external payable;
 }
 
 contract ERC20Mock is ERC20("Mock", "MOCK", 18) {
@@ -52,7 +50,7 @@ contract ExchangeHelperTest is Test {
         uint256 token_reserve,
         uint256 maxTokens,
         uint256 value
-    ) internal returns (uint256 liquidity_minted, uint256 token_amount) {
+    ) internal pure returns (uint256 liquidity_minted, uint256 token_amount) {
         if (total_liquidity > 0) {
             // nB = (B * nA) / A
             token_amount = value * token_reserve / eth_reserve;
@@ -87,21 +85,5 @@ contract ExchangeHelperTest is Test {
 
         assertEq(tokens, expectedTokens, "Should have tokens");
         assertEq(mintLpAmount, expectedMint, "Should have eth");
-    }
-
-    function testBalance() external {
-        // beware, EOA dont revert so will return 0
-        //(uint256 ret2) = Foo(deployed).balance(address(0));
-        //assertEq(ret2, 0, "Address 0 response empty");
-
-        vm.expectRevert();
-        (uint256 ret2) = Foo(deployed).balance(address(this));
-
-        (ret2) = Foo(deployed).balance(address(token));
-        assertEq(ret2, 0, "No token in contract");
-
-        token.transfer(deployed, 31337);
-        (ret2) = Foo(deployed).balance(address(token));
-        assertEq(ret2, 31337, "Should have 31337 tokens");
     }
 }
