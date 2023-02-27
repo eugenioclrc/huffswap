@@ -345,4 +345,7 @@
 
     tokenToTokenSwapInputJump:
         TOKEN_TO_TOKEN_SWAP_INPUT_WRAPPER()
+
+    // Revert otherwise
+    0x00 dup1 revert
 }

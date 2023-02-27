@@ -193,4 +193,7 @@
 
     createExchangeJump:
         CREATE_EXCHANGE()
+
+    // Revert otherwise
+    0x00 dup1 revert
 }
