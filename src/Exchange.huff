@@ -51,7 +51,8 @@
 
     __callerOk:   
 
-    UNLOCK()
+    /// @dev removing reentrancy guard, because to make a fair comparission with uni V1
+    // UNLOCK()
 
     __EVENT_HASH(Initialized)                  // []
     0x20 0x00                               // [0, 32, sig]
@@ -89,7 +90,8 @@
 
     // current stack    [max_tokens, min_liquidity]
     
-    LOCK()
+    /// @dev removing reentrancy guard, because to make a fair comparission with uni V1
+    // LOCK()
 
     0x00 GET_ARG_ADDRESS()
     // current stack    [address, max_tokens, min_liquidity]
@@ -144,7 +146,8 @@
     caller dup2 _MINT()
     
 
-    UNLOCK()
+    /// @dev removing reentrancy guard, because to make a fair comparission with uni V1
+    // UNLOCK()
 
 
     // emit AddLiquidity(msg.sender, msg.value, token_amount);
