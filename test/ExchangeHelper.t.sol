@@ -60,22 +60,29 @@ contract ExchangeHelperTest is Test {
         uint256 removeLp
     ) internal pure returns (uint256 token_amount, uint256 eth_amount) {
         require(total_liquidity > 0, "total_liquidity > 0");
-        require(removeLp < total_liquidity - 1, "removeLp > 0");
+        require(removeLp < total_liquidity + 1, "removeLp > 0");
         eth_amount = removeLp * eth_reserve / total_liquidity;
         token_amount = removeLp * token_reserve / total_liquidity;
     }
 
-    function testRemoveLiquidity() public {
-        uint256 eth_reserve = 500;
-        uint256 token_reserve = 1000;
+    function testRemoveLiquidityFuzz(uint256 eth_reserve, uint256 token_reserve, uint256 removeLp, uint256 totalLp) public {
+        vm.assume(eth_reserve > 0);
+        vm.assume(token_reserve > 0);
+        vm.assume(removeLp < type(uint128).max);
+        vm.assume(totalLp < type(uint128).max);
+        vm.assume(eth_reserve < type(uint128).max);
+        vm.assume(token_reserve < type(uint128).max);
+        vm.assume(totalLp > 1);
+        removeLp = bound(removeLp, 1, totalLp);
+
         (uint256 expectedTokenAmount, uint256 expectedEthAmount) =
-            calcRemoveLiquidity(1000, eth_reserve, token_reserve, 100);
+            calcRemoveLiquidity(totalLp, eth_reserve, token_reserve, removeLp);
 
         deal(address(token), deployed, token_reserve);
         deal(deployed, eth_reserve);
 
         (uint256 tokenAmount, uint256 ethAmount) =
-            Foo(deployed).removeLiquidity(1000, 100, address(token));
+            Foo(deployed).removeLiquidity(totalLp, removeLp, address(token));
         
         assertEq(tokenAmount, expectedTokenAmount, "Should have tokens");
         assertEq(ethAmount, expectedEthAmount, "Should have eth");
