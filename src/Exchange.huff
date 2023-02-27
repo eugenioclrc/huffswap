@@ -25,10 +25,6 @@
 
 #define constant FACTORY_ADDRESS = 0x0000000000000000000000000000000000000000
 
-// storage
-#define constant INITIALIZED_SLOT = FREE_STORAGE_POINTER()
-
-
 #define macro TOKEN_ADDRESS() = takes (0) returns (0) {
     0x00 GET_ARG_ADDRESS()  // [arg_addr]
     0x00 mstore             // []
