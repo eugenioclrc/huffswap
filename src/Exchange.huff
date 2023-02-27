@@ -270,7 +270,17 @@
 }
 
 #define macro TOKEN_TO_TOKEN_SWAP_INPUT_WRAPPER() = takes(0) returns(0) {
+    0x84    calldataload        // [tokenAddress]
+    
+    dup1                        // [tokenAddress, tokenAddress]
+    GET_TOKEN_EXCHANGE()        // [exchangeAddress, tokenAddress]
 
+    swap1                       // [tokenAddress, exchangeAddress]
+    
+    0x64    calldataload        // [deadline, tokenAddress, exchangeAddress]
+    0x44    calldataload        // [minEthBought, deadline, tokenAddress, exchangeAddress]
+    0x24    calldataload        // [minTokensBought, minEthBought, deadline, tokenAddress, exchangeAddress]
+    0x04    calldataload        // [tokensSold, minTokensBought, minEthBought, deadline, tokenAddress, exchangeAddress]
 
     TOKEN_TO_TOKEN_SWAP_INPUT()     // [tokensBought]
 
@@ -280,6 +290,37 @@
     0x20
     0x00
     return
+}
+
+#define macro GET_TOKEN_EXCHANGE() = takes(1) returns(1) {
+    // Input Stack:   [tokenAddress]
+    // Output Stack:  [exchangeAddress]
+
+    __FUNC_SIG("getExchange(address)")          // [signature, tokenAddress]
+    0xE0 shl
+    0x00 mstore                                 // [tokenAddress]      
+
+    0x04
+    mstore                                      // []
+
+    0x20                                        // [retSize]
+    0x00                                        // [retOffset, retSize]
+    0x24                                        // [argsSize, retOffset, retSize]
+    0x00                                        // [argsOffset, argsSize, retOffset, retSize] 
+    
+    [FACTORY_ADDRESS]                           // [factoryAddress, argsOffset, argsSize, retOffset, retSize] 
+
+    gas                                         // [gas, factoryAddress, argsOffset, argsSize, retOffset, retSize] 
+
+    staticcall                                  // [success]
+
+    // Revert if call is unsuccessful
+    _success jumpi
+    0x00 dup1 revert
+    
+    _success:                                   // []
+        0x00
+        mload                                   // [exchangeAddress] 
 }
 
 #define macro MAIN() = takes (0) returns (0) {
