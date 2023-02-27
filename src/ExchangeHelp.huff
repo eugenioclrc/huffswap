@@ -1,11 +1,6 @@
 #include "huffmate/tokens/ERC20.huff"
 #include "./SwapHelp.huff"
 
-#define macro TOTAL_ASSETS_INNER() = takes (1) returns (1) {
-    address
-    GET_TOKEN_BALANCE_OF_STATIC()
-}
-
 #define macro CALCULATE_TRANSFERS_REMOVE_FOR_LIQUIDITY() = takes (3) returns (2) {
     // Input Stack: [total_supplyLP, amount_remove, address token]
     // return stack eth_amount, token_amount
@@ -63,8 +58,7 @@
     // [eth_reserve, total_supplyLP, max_tokens, address token]
 
     // uint256 token_reserve = ERC20(tokenAddress).balanceOf(address(this));
-    dup4
-    TOTAL_ASSETS_INNER()
+    dup4 address GET_TOKEN_BALANCE_OF_STATIC()
 
     // [token_reserve, eth_reserve, total_supplyLP, max_tokens, address]
 
