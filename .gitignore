@@ -20,3 +20,4 @@ flattened.txt
 
 # Ignore Broadcasts
 broadcast
+*__TEMP__*
