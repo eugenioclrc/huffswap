@@ -251,6 +251,8 @@
 
     dup1 __FUNC_SIG(initialize) eq initializeJump jumpi
 
+    // Revert if no selector matches
+    0x00 dup1 revert
 
     tokenAddress:
         TOKEN_ADDRESS()
@@ -279,6 +281,4 @@
     ethToTokenSwapInputJump:
         ETH_TO_TOKEN_SWAP_INPUT_WRAPPER()
 
-    // Revert if no selector matches
-    0x00 dup1 revert
 }
