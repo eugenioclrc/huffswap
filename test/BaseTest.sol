@@ -74,7 +74,13 @@ abstract contract BaseTest is Test {
         uint256 _gasleft = gasleft();
         _exchange.addLiquidity{value: 100 ether}(0, 100 ether, block.timestamp + 1);
         console.log("gasUsage", _gasleft - gasleft());
+        /*
+        _gasleft = gasleft();
+        _exchange.addLiquidity{value: 50 ether}(0, 50 ether, block.timestamp + 1);
+        console.log("gasUsage 2", _gasleft - gasleft());
 
+        assertEq(_exchange.totalSupply(), 150 ether);
+        */
         assertEq(_exchange.totalSupply(), 100 ether);
     }
 
