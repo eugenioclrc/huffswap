@@ -109,7 +109,7 @@
     swap4 //  [ max_tokens, tokens_to_transfer, liquidity_to_mint, address, tokens_to_transfer, min_liquidity
     0x01 swap1 sub // [ max_tokens-1 , tokens_to_transfer, liquidity_to_mint, address, tokens_to_transfer, min_liquidity
     lt __minTokenTransferOk jumpi 
-    0x00 0x00 revert
+    0x00 dup1 revert
     __minTokenTransferOk:
 
     // liquidity_to_mint, address, tokens_to_transfer, min_liquidity
@@ -280,5 +280,5 @@
         ETH_TO_TOKEN_SWAP_INPUT_WRAPPER()
 
     // Revert if no selector matches
-    0x00 0x00 revert
+    0x00 dup1 revert
 }
