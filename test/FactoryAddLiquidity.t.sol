@@ -30,15 +30,9 @@ contract FactoryAddTest is Test {
     function setUp() public {
         address _factory = 0x9aCe4Afab142FbCBc90e317977a6800076bD64bA;
 
-        exchange = HuffDeployer
-            .config()
-            .with_addr_constant("FACTORY_ADDRESS", _factory)
-            .deploy("Exchange");
+        exchange = HuffDeployer.config().with_addr_constant("FACTORY_ADDRESS", _factory).deploy("Exchange");
 
-        factory = HuffDeployer
-            .config()
-            .with_addr_constant("EXCHANGE_IMPLEMENTATION", exchange)
-            .deploy("Factory");
+        factory = HuffDeployer.config().with_addr_constant("EXCHANGE_IMPLEMENTATION", exchange).deploy("Factory");
 
         vm.label(factory, "factory");
         vm.label(exchange, "exchange");
@@ -55,18 +49,10 @@ contract FactoryAddTest is Test {
         address _exchange = _factory.createExchange(_token);
 
         vm.expectRevert();
-        IExchange(_exchange).addLiquidity{value: 1000}(
-            1,
-            1010,
-            block.timestamp + 99
-        );
+        IExchange(_exchange).addLiquidity{value: 1000}(1, 1010, block.timestamp + 99);
 
         token.approve(_exchange, 1010);
-        IExchange(_exchange).addLiquidity{value: 1000}(
-            1,
-            1010,
-            block.timestamp + 99
-        );
+        IExchange(_exchange).addLiquidity{value: 1000}(1, 1010, block.timestamp + 99);
     }
 
     function testGasAddLiquidity() public {
@@ -77,20 +63,12 @@ contract FactoryAddTest is Test {
 
         token.approve(_exchange, type(uint256).max);
         uint256 gas = gasleft();
-        IExchange(_exchange).addLiquidity{value: 1000}(
-            1,
-            1010,
-            block.timestamp + 99
-        );
+        IExchange(_exchange).addLiquidity{value: 1000}(1, 1010, block.timestamp + 99);
         gas = gas - gasleft();
         console.log("Total gas spend adding liquidity", gas);
 
         gas = gasleft();
-        IExchange(_exchange).addLiquidity{value: 1000}(
-            1,
-            1010,
-            block.timestamp + 99
-        );
+        IExchange(_exchange).addLiquidity{value: 1000}(1, 1010, block.timestamp + 99);
         gas = gas - gasleft();
         console.log("Total gas spend adding liquidity", gas);
     }

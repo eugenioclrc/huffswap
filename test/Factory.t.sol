@@ -36,15 +36,9 @@ contract FactoryTest is Test {
         address _factory = 0x9aCe4Afab142FbCBc90e317977a6800076bD64bA;
         // address _exchange = HuffDeployer.get_config_with_create_2(1);
 
-        exchange = HuffDeployer
-            .config()
-            .with_addr_constant("FACTORY_ADDRESS", _factory)
-            .deploy("Exchange");
+        exchange = HuffDeployer.config().with_addr_constant("FACTORY_ADDRESS", _factory).deploy("Exchange");
 
-        factory = HuffDeployer
-            .config()
-            .with_addr_constant("EXCHANGE_IMPLEMENTATION", exchange)
-            .deploy("Factory");
+        factory = HuffDeployer.config().with_addr_constant("EXCHANGE_IMPLEMENTATION", exchange).deploy("Factory");
 
         vm.label(factory, "factory");
         vm.label(exchange, "exchange");
@@ -55,33 +49,21 @@ contract FactoryTest is Test {
     }
 
     function testImmutables() external {
-        assertEq(
-            IExchange(exchange).factory(),
-            factory,
-            "Factory address should be the same"
-        );
-        assertEq(
-            IFactory(factory).IMPLEMENTATION(),
-            exchange,
-            "Exchange address should be the same"
-        );
+        assertEq(IExchange(exchange).factory(), factory, "Factory address should be the same");
+        assertEq(IFactory(factory).IMPLEMENTATION(), exchange, "Exchange address should be the same");
     }
 
     function testImplementation() public {
         IFactory _factory = IFactory(factory);
         assertEq(_factory.IMPLEMENTATION(), exchange);
 
-        (bool sucess, ) = factory.call("notImplemented");
+        (bool sucess,) = factory.call("notImplemented");
         assertFalse(sucess);
 
-        (sucess, ) = factory.call(abi.encodeWithSignature("IMPLEMENTATION()"));
+        (sucess,) = factory.call(abi.encodeWithSignature("IMPLEMENTATION()"));
         assertTrue(sucess);
 
-        assertEq(
-            IExchange(exchange).factory(),
-            factory,
-            "Factory address should be the same"
-        );
+        assertEq(IExchange(exchange).factory(), factory, "Factory address should be the same");
     }
 
     function testAddress0() public {
@@ -120,52 +102,21 @@ contract FactoryTest is Test {
 
         assertEq(_factory.getExchange(_token), address(0));
 
-        assertEq(
-            _factory.getToken(_token),
-            address(0),
-            "Token should be 0 because its not added yet"
-        );
-        assertEq(
-            _factory.getTokenWithId(1),
-            address(0),
-            "Token should be 0 because its not added yet"
-        );
+        assertEq(_factory.getToken(_token), address(0), "Token should be 0 because its not added yet");
+        assertEq(_factory.getTokenWithId(1), address(0), "Token should be 0 because its not added yet");
 
-        assertEq(
-            _factory.tokenCount(),
-            0,
-            "Token count should be 0, not token has been added yet"
-        );
+        assertEq(_factory.tokenCount(), 0, "Token count should be 0, not token has been added yet");
 
         address newExchange = _factory.createExchange(_token);
-        assertFalse(
-            newExchange == address(0),
-            "Exchange should be created and cant be address(0)"
-        );
+        assertFalse(newExchange == address(0), "Exchange should be created and cant be address(0)");
 
-        assertEq(
-            IExchange(newExchange).tokenAddress(),
-            _token,
-            "Token address should be the same as the one added"
-        );
+        assertEq(IExchange(newExchange).tokenAddress(), _token, "Token address should be the same as the one added");
 
-        assertEq(
-            _factory.tokenCount(),
-            1,
-            "Token count should be 1, 1 token has been added"
-        );
+        assertEq(_factory.tokenCount(), 1, "Token count should be 1, 1 token has been added");
 
-        assertEq(
-            _factory.getTokenWithId(1),
-            _token,
-            "Token should be the same as the one added"
-        );
+        assertEq(_factory.getTokenWithId(1), _token, "Token should be the same as the one added");
 
-        assertEq(
-            newExchange,
-            _factory.createExchange(_token),
-            "Exchange shouldnt be created cant be address(0)"
-        );
+        assertEq(newExchange, _factory.createExchange(_token), "Exchange shouldnt be created cant be address(0)");
         assertEq(_factory.tokenCount(), 1);
 
         assertFalse(_factory.createExchange(address(token2)) == address(0));
@@ -177,11 +128,7 @@ contract FactoryTest is Test {
         uint256 g = gasleft();
         address e = IFactory(factory).createExchange(t);
         console.log("totalgas create exchange", g - gasleft());
-        assertEq(
-            IExchange(e).factory(),
-            factory,
-            "Factory address should be the same"
-        );
+        assertEq(IExchange(e).factory(), factory, "Factory address should be the same");
 
         // shouldnt reinitialize
         vm.expectRevert();
