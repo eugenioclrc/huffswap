@@ -118,7 +118,6 @@
   dup3                            // [ethBought, minEth, tokensSold, ethBought, tokenAddress, tokenRecipient]
   VALIDATE_ETH_RECEIVE()          // [tokensSold, ethBought, tokenAddress, tokenRecipient]
 
-  // [msg.sender, address(this), tokensSold, tokenAddress]
   swap2                           // [tokenAddress, ethBought, tokensSold, tokenRecipient]
   dup3                            // [tokensSold, tokenAddress, ethBought, tokensSold, tokenRecipient]
   address
@@ -157,11 +156,11 @@
   // Input Stack:  [ethBought, minEth]
   // Output Stack: []
 
-  dup2          // [ethBought, minEth]
+  dup2          // [minEth, ethBought, minEth]
   dup2          // [ethBought, minEth, ethBought, minEth]
   gt            // [greaterThanMinEth, ethBought, minEth]
   dup2          // [ethBought, greaterThanMinEth, ethBought, minEth] 
-  dup3          // [minEth, ethBought, greaterThanMinEth, ethBought, minEth] 
+  dup4          // [minEth, ethBought, greaterThanMinEth, ethBought, minEth] 
   eq            // [equalThanMinEth, greaterThanMinEth, ethBough, minEth]
   or            // [validAmount, ethBough, minEth]]
   _continue
