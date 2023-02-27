@@ -16,10 +16,11 @@
 #define function tokenAddress() view returns (address)
 #define function factory() view returns (address)
 
-#define function getTokenToEthInputPrice(uint256, address) nonpayable returns (uint256)
-#define function getEthToTokenInputPrice(uint256, address) nonpayable returns (uint256)
-#define function tokenToEthSwapInput(uint256, uint256, uint256, address, address) nonpayable returns (uint256)
-#define function ethToTokenSwapInput(uint256, uint256, address, address) nonpayable returns (uint256)
+#define function getTokenToEthInputPrice(uint256) nonpayable returns (uint256)
+#define function getEthToTokenInputPrice(uint256) nonpayable returns (uint256)
+
+#define function tokenToEthSwapInput(uint256, uint256, uint256) nonpayable returns (uint256)
+#define function ethToTokenSwapInput(uint256, uint256) nonpayable returns (uint256)
 
 #define event Initialized()
 
@@ -174,7 +175,7 @@
 
 #define macro GET_TOKEN_TO_ETH_INPUT_PRICE_WRAPPER() = takes(0) returns(0) {
     0x04 calldataload                 // [tokensSold]
-    0x24 calldataload                 // [tokenAddress, tokensSold]
+    0x00 GET_ARG_ADDRESS()            // [tokenAddress, tokensSold]
 
     GET_TOKEN_TO_ETH_INPUT_PRICE()    // [price]
     
@@ -188,7 +189,7 @@
 
 #define macro GET_ETH_TO_TOKEN_INPUT_PRICE_WRAPPER() = takes(0) returns(0) {
     0x04 calldataload                 // [ethSold]
-    0x24 calldataload                 // [tokenAddress, ethSold]
+    0x00 GET_ARG_ADDRESS()            // [tokenAddress, ethSold]
 
     GET_ETH_TO_TOKEN_INPUT_PRICE()    // [price]
     
@@ -199,13 +200,30 @@
     0x00
     return
 }
-        
+
 #define macro TOKEN_TO_ETH_SWAP_INPUT_WRAPPER() = takes(0) returns(0) {
-    0x64 calldataload     // [tokenRecipient]
-    0x84 calldataload     // [tokenAddress, tokenRecipient]
-    0x24 calldataload     // [minEth, tokenAddress, tokenRecipient]
-    0x04 calldataload     // [tokensSold, minEth, tokenAddress, tokenRecipient]
-    0x44 calldataload     // [deadline, tokensSold, minEth, tokenAddress, tokenRecipient]
+    caller                      // [tokenRecipient]
+    0x00 GET_ARG_ADDRESS()      // [minEth, tokenAddress, tokenRecipient]
+    0x24 calldataload           // [minEth, tokenAddress, tokenRecipient]
+    0x04 calldataload           // [tokensSold, minEth, tokenAddress, tokenRecipient]
+    0x44 calldataload           // [deadline, tokensSold, minEth, tokenAddress, tokenRecipient]
+
+    TOKEN_TO_ETH_SWAP_INPUT()   // [ethBought]
+
+    0x00                        
+    mstore
+
+    0x20
+    0x00
+    return
+}
+        
+#define macro TOKEN_TO_ETH_SWAP_INPUT_RECIPIENT_WRAPPER() = takes(0) returns(0) {
+    0x64 calldataload           // [tokenRecipient]
+    0x00 GET_ARG_ADDRESS()      // [tokenAddress, tokenRecipient]
+    0x24 calldataload           // [minEth, tokenAddress, tokenRecipient]
+    0x04 calldataload           // [tokensSold, minEth, tokenAddress, tokenRecipient]
+    0x44 calldataload           // [deadline, tokensSold, minEth, tokenAddress, tokenRecipient]
 
     TOKEN_TO_ETH_SWAP_INPUT()   // [ethBought]
 
@@ -218,10 +236,26 @@
 }
   
 #define macro ETH_TO_TOKEN_SWAP_INPUT_WRAPPER() = takes(0) returns(0) {
-    0x64 calldataload   // [tokenAddress]
-    0x44 calldataload   // [recipient, tokenAddress]
-    0x04 calldataload   // [minTokens, recipient, tokenAddress]
-    0x24 calldataload   // [deadline, minTokens, recipient, tokenAddress]
+    0x00 GET_ARG_ADDRESS()      // [tokenAddress]
+    caller                      // [recipient, tokenAddress]
+    0x04 calldataload           // [minTokens, recipient, tokenAddress]
+    0x24 calldataload           // [deadline, minTokens, recipient, tokenAddress]
+
+    ETH_TO_TOKEN_SWAP_INPUT()   // [ethBought]
+
+    0x00                        
+    mstore
+
+    0x20
+    0x00
+    return
+}
+
+#define macro ETH_TO_TOKEN_SWAP_INPUT_RECIPIENT_WRAPPER() = takes(0) returns(0) {
+    0x00 GET_ARG_ADDRESS()      // [tokenAddress]
+    0x44 calldataload           // [recipient, tokenAddress]
+    0x04 calldataload           // [minTokens, recipient, tokenAddress]
+    0x24 calldataload           // [deadline, minTokens, recipient, tokenAddress]
 
     ETH_TO_TOKEN_SWAP_INPUT()   // [ethBought]
 
@@ -241,8 +275,13 @@
 
     dup1 __FUNC_SIG(getTokenToEthInputPrice) eq getTokenToEthInputPriceJump jumpi
     dup1 __FUNC_SIG(getEthToTokenInputPrice) eq getEthToTokenInputPriceJump jumpi
+    
+    dup1 __FUNC_SIG("tokenToEthSwapInput(uint256,uint256,uint256,address)") eq tokenToEthSwapInputRecipientJump jumpi
     dup1 __FUNC_SIG(tokenToEthSwapInput) eq tokenToEthSwapInputJump jumpi
+
+    dup1 __FUNC_SIG("ethToTokenSwapInput(uint256,uint256,address)") eq ethToTokenSwapInputRecipientJump jumpi
     dup1 __FUNC_SIG(ethToTokenSwapInput) eq ethToTokenSwapInputJump jumpi
+
 
     dup1 __FUNC_SIG(decimals) eq decimalsJump jumpi
     //dup1 __FUNC_SIG(DOMAIN_SEPARATOR) eq domainSeparatorJump jumpi
@@ -281,7 +320,12 @@
     tokenToEthSwapInputJump:
         TOKEN_TO_ETH_SWAP_INPUT_WRAPPER()
 
+    tokenToEthSwapInputRecipientJump:
+        TOKEN_TO_ETH_SWAP_INPUT_RECIPIENT_WRAPPER()
+
     ethToTokenSwapInputJump:
         ETH_TO_TOKEN_SWAP_INPUT_WRAPPER()
 
+    ethToTokenSwapInputRecipientJump:
+        ETH_TO_TOKEN_SWAP_INPUT_RECIPIENT_WRAPPER()
 }
