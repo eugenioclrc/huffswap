@@ -22,6 +22,24 @@
 
 }
 
+#define macro REMOVELIQUIDITY() = takes (0) returns (0) {
+    0x44 calldataload // token address, por ahora metemos cualquiera
+    0x24 calldataload // param1 max_tokens
+    
+    // total minted
+    0x04 calldataload // param0
+    
+  
+    // Input Stack: [total_supplyLP, amount_remove, address token]
+    CALCULATE_TRANSFERS_REMOVE_FOR_LIQUIDITY()
+    // Output Stack: [eth_amount, token_amount]
+
+    0x20 mstore
+    0x00 mstore
+    0x40 0x00 return
+
+}
+
 
 #define macro MAIN() = takes (0) returns (0) {
     pc calldataload 0xE0 shr
