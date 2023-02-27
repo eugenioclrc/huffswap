@@ -2,36 +2,38 @@
 #include "./SwapHelp.huff"
 
 #define macro CALCULATE_TRANSFERS_REMOVE_FOR_LIQUIDITY() = takes (3) returns (2) {
-    // Input Stack: [total_supplyLP, amount_remove, address token]
+    // Input Stack: [totalLp, removeLp, tokenAddress]
     // return stack eth_amount, token_amount
 
-    swap2 //[token, amount_remove, total_supplyLP]
-    address
-    GET_TOKEN_BALANCE_OF_STATIC()
+    swap2 //[tokenAddress, removeLp, totalLp]
 
-    // token_amount = amount * token_reserve / total_liquidity;
-    // 
+    address GET_TOKEN_BALANCE_OF_STATIC()
+    //[tokenReserve, removeLp, totalLp]
 
-    //[token balance, amount_remove, total_supplyLP]
+    // token_amount = amount * tokenReserve / totalLp;
+
     dup2 mul
-    // [token balance*amount_remove, amount_remove, total_supplyLP]
-    dup3 div
-    // [token_amount, amount_remove, total_supplyLP]
-    // eth_amount = amount * address(this).balance / total_liquidity;
+    //[tokenReserve * removeLp, removeLp, totalLp]
+    dup3 swap1 div
+    //[tokenReserve * removeLp / totalLp, removeLp, totalLp]
+    //[token_amount, removeLp, totalLp]
+
+    // [token_amount, removeLp, totalLp]
+    
+    // eth_amount = removeLp * address(this).balance / totalLp;
     
     swap1
-    // [amount_remove, token_amount, total_supplyLP]
+    // [removeLp, token_amount, totalLp]
 
     selfbalance mul
-    // [amount_remove * balance, token_amount, total_supplyLP]
-    dup3 div
-    // [amount_remove * balance / total_supplyLP, token_amount, total_supplyLP]
-    // [eth_amount, token_amount, total_supplyLP]
+    // [removeLp * balance, token_amount, totalLp]
+    dup3 swap1 div
+    // [removeLp * balance / totalLp, token_amount, totalLp]
+    // [eth_amount, token_amount, totalLp]
     swap2
-    // [total_supplyLP, token_amount, eth_amount]
+    // [totalLp, token_amount, eth_amount]
     pop
     // [token_amount, eth_amount]
-
 }
 
 

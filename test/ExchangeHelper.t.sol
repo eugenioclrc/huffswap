@@ -12,6 +12,12 @@ interface Foo {
         external
         payable
         returns (uint256 amount, uint256 amount2);
+
+    function removeLiquidity(
+        uint256 total_liquidity,
+        uint256 removeLp,
+        address token
+    ) external view returns (uint256 token_amount, uint256 eth_amount);
 }
 
 contract ERC20Mock is ERC20("Mock", "MOCK", 18) {
@@ -30,20 +36,6 @@ contract ExchangeHelperTest is Test {
         token = new ERC20Mock();
     }
 
-    /*
-    function testAddLiquidityFirst(uint256 maxTokens, uint256 eth) public {
-        vm.assume(eth > 0);
-        vm.assume(eth < 10 ether);
-        vm.assume(maxTokens > 0);
-
-        (uint256 expectedMint, uint256 expectedTokens) = calcLiquidity(0, eth, 0, maxTokens, eth);
-
-        (uint256 mintLpAmount, uint256 tokens) = Foo(deployed).addLiquidity{value: eth}(0, maxTokens, address(token));
-        assertEq(tokens, expectedTokens, "Should have 100 tokens");
-        assertEq(mintLpAmount, expectedMint, "Should have 100 eth"); 
-    }
-    */
-
     function calcLiquidity(
         uint256 total_liquidity,
         uint256 eth_reserve,
@@ -59,6 +51,34 @@ contract ExchangeHelperTest is Test {
             token_amount = maxTokens;
             liquidity_minted = value;
         }
+    }
+
+    function calcRemoveLiquidity(
+        uint256 total_liquidity,
+        uint256 eth_reserve,
+        uint256 token_reserve,
+        uint256 removeLp
+    ) internal pure returns (uint256 token_amount, uint256 eth_amount) {
+        require(total_liquidity > 0, "total_liquidity > 0");
+        require(removeLp < total_liquidity - 1, "removeLp > 0");
+        eth_amount = removeLp * eth_reserve / total_liquidity;
+        token_amount = removeLp * token_reserve / total_liquidity;
+    }
+
+    function testRemoveLiquidity() public {
+        uint256 eth_reserve = 500;
+        uint256 token_reserve = 1000;
+        (uint256 expectedTokenAmount, uint256 expectedEthAmount) =
+            calcRemoveLiquidity(1000, eth_reserve, token_reserve, 100);
+
+        deal(address(token), deployed, token_reserve);
+        deal(deployed, eth_reserve);
+
+        (uint256 tokenAmount, uint256 ethAmount) =
+            Foo(deployed).removeLiquidity(1000, 100, address(token));
+        
+        assertEq(tokenAmount, expectedTokenAmount, "Should have tokens");
+        assertEq(ethAmount, expectedEthAmount, "Should have eth");
     }
 
     function testAddLiquidityFuzz(
