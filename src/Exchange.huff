@@ -9,7 +9,7 @@
 //#include "huffmate/utils/ReentrancyGuard.huff"
 #include "huffmate/utils/SafeTransferLib.huff"
 #include "./ExchangeHelp.huff"
-#include "./SwapHelp.huff"
+#include "./helpers/SwapHelper.huff"
 
 #define function initialize() nonpayable returns ()
 #define function addLiquidity(uint256 min_liquidity, uint256 max_tokens, uint256 deadline) payable returns (uint256 liquidity_minted)
