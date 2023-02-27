@@ -27,7 +27,7 @@
     swap1
     // [amount_remove, token_amount, total_supplyLP]
 
-    balance mul
+    selfbalance mul
     // [amount_remove * balance, token_amount, total_supplyLP]
     dup3 div
     // [amount_remove * balance / total_supplyLP, token_amount, total_supplyLP]
@@ -58,7 +58,7 @@
     // [total_supplyLP, max_tokens, address token]
 
     // uint256 eth_reserve = address(this).balance - msg.value;
-    callvalue address balance sub 
+    callvalue selfbalance sub 
 
     // [eth_reserve, total_supplyLP, max_tokens, address token]
 
