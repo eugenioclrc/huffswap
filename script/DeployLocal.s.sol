@@ -59,6 +59,10 @@ contract DeployLocal is Script {
             address(new Token("Wrapped Ether", "WETH", 18))
         ];
 
+        Token newToken = new Token("New Weird Token", "NTKN", 10);
+        newToken.mint(0x70997970C51812dc3A010C7d01b50e0d17dc79C8, 100 ether);
+        console.log("new token", address(newToken));
+
         for (uint256 i = 0; i < 6; i++) {
             Token token = Token(tokens[i]);
             vm.label(address(token), token.symbol());
