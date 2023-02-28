@@ -72,7 +72,11 @@ abstract contract BaseTest is Test {
         _exchange.addLiquidity{value: 0}(0, 1, block.timestamp + 1);
 
         uint256 _gasleft = gasleft();
-        _exchange.addLiquidity{value: 100 ether}(0, 100 ether, block.timestamp + 1);
+        _exchange.addLiquidity{value: 100 ether}(
+            0,
+            100 ether,
+            block.timestamp + 1
+        );
         console.log("gasUsage", _gasleft - gasleft());
         /*
         _gasleft = gasleft();
@@ -87,7 +91,11 @@ abstract contract BaseTest is Test {
     function testRemoveLiquidity() public {
         IExchange _exchange = IExchange(exchange_address);
 
-        uint256 addedLiquidity = _exchange.addLiquidity{value: 100 ether}(0, 100 ether, block.timestamp + 1);
+        uint256 addedLiquidity = _exchange.addLiquidity{value: 100 ether}(
+            0,
+            100 ether,
+            block.timestamp + 1
+        );
 
         uint256 etherPrev = address(this).balance;
         uint256 tokenPrev = token.balanceOf(address(this));
@@ -107,7 +115,11 @@ abstract contract BaseTest is Test {
     function testSwapEthToken() public {
         IExchange _exchange = IExchange(exchange_address);
 
-        _exchange.addLiquidity{value: 100 ether}(0, 100 ether, block.timestamp + 1);
+        _exchange.addLiquidity{value: 100 ether}(
+            0,
+            100 ether,
+            block.timestamp + 1
+        );
 
         uint256 swap1 = _exchange.getEthToTokenInputPrice(1 ether);
         uint256 swap10 = _exchange.getEthToTokenInputPrice(10 ether);
@@ -119,22 +131,33 @@ abstract contract BaseTest is Test {
         uint256 etherBalance = address(_exchange).balance;
         uint256 tokenBalance = token.balanceOf(address(_exchange));
         uint256 oldK = etherBalance * tokenBalance;
-        uint256 newK = (etherBalance + 1 ether * 997 / 1000) * (tokenBalance - swap1);
+        uint256 newK = (etherBalance + (1 ether * 997) / 1000) *
+            (tokenBalance - swap1);
 
         assertGt(newK, oldK, "new K should be greater than old K");
-        assertEq(oldK, 10 ** 40);
-        assertEq(newK, 10 ** 40 + 85.894 ether);
+        assertEq(oldK, 10**40);
+        assertEq(newK, 10**40 + 85.894 ether);
 
-        assertEq(Math.sqrt(oldK), Math.sqrt(newK), "sqrt(K) should be invariant");
+        assertEq(
+            Math.sqrt(oldK),
+            Math.sqrt(newK),
+            "sqrt(K) should be invariant"
+        );
 
         uint256 ethBefore = address(this).balance;
         uint256 tokenBefore = token.balanceOf(address(this));
 
         vm.expectRevert();
-        _exchange.ethToTokenSwapInput{value: 1 ether}(swap1 + 1, block.timestamp + 1);
+        _exchange.ethToTokenSwapInput{value: 1 ether}(
+            swap1 + 1,
+            block.timestamp + 1
+        );
 
         uint256 _gasleft = gasleft();
-        _exchange.ethToTokenSwapInput{value: 1 ether}(swap1, block.timestamp + 1);
+        _exchange.ethToTokenSwapInput{value: 1 ether}(
+            swap1,
+            block.timestamp + 1
+        );
         console.log("gasUsage", _gasleft - gasleft());
 
         // spent 1 ether
@@ -146,7 +169,11 @@ abstract contract BaseTest is Test {
     function testSwapTokenEth() public {
         IExchange _exchange = IExchange(exchange_address);
 
-        _exchange.addLiquidity{value: 100 ether}(0, 100 ether, block.timestamp + 1);
+        _exchange.addLiquidity{value: 100 ether}(
+            0,
+            100 ether,
+            block.timestamp + 1
+        );
 
         uint256 swap1 = _exchange.getTokenToEthInputPrice(1 ether);
         uint256 swap10 = _exchange.getTokenToEthInputPrice(10 ether);
@@ -158,13 +185,18 @@ abstract contract BaseTest is Test {
         uint256 etherBalance = address(_exchange).balance;
         uint256 tokenBalance = token.balanceOf(address(_exchange));
         uint256 oldK = etherBalance * tokenBalance;
-        uint256 newK = (etherBalance + 1 ether * 997 / 1000) * (tokenBalance - swap1);
+        uint256 newK = (etherBalance + (1 ether * 997) / 1000) *
+            (tokenBalance - swap1);
 
         assertGt(newK, oldK, "new K should be greater than old K");
-        assertEq(oldK, 10 ** 40);
-        assertEq(newK, 10 ** 40 + 85.894 ether);
+        assertEq(oldK, 10**40);
+        assertEq(newK, 10**40 + 85.894 ether);
 
-        assertEq(Math.sqrt(oldK), Math.sqrt(newK), "sqrt(K) should be invariant");
+        assertEq(
+            Math.sqrt(oldK),
+            Math.sqrt(newK),
+            "sqrt(K) should be invariant"
+        );
 
         uint256 ethBefore = address(this).balance;
         uint256 tokenBefore = token.balanceOf(address(this));
@@ -185,7 +217,11 @@ abstract contract BaseTest is Test {
     function testSwapMultipleTimes() public {
         IExchange _exchange = IExchange(exchange_address);
 
-        _exchange.addLiquidity{value: 100 ether}(0, 100 ether, block.timestamp + 1);
+        _exchange.addLiquidity{value: 100 ether}(
+            0,
+            100 ether,
+            block.timestamp + 1
+        );
 
         address bob = makeAddr("bob");
         deal(bob, 1 ether);
@@ -195,7 +231,10 @@ abstract contract BaseTest is Test {
         uint256 tokensBought;
 
         for (uint256 i; i < 100; ++i) {
-            tokensBought = _exchange.ethToTokenSwapInput{value: bob.balance}(1, block.timestamp + 1);
+            tokensBought = _exchange.ethToTokenSwapInput{value: bob.balance}(
+                1,
+                block.timestamp + 1
+            );
             assertEq(tokensBought, token.balanceOf(bob));
             _exchange.tokenToEthSwapInput(tokensBought, 1, block.timestamp + 1);
         }
@@ -205,7 +244,11 @@ abstract contract BaseTest is Test {
         assertEq(1 ether - bob.balance, 449219912501890102);
 
         // should be greater than initial liquidity due to fees
-        assertEq(address(_exchange).balance, 100449219912501890102, "ether on LP wrong");
+        assertEq(
+            address(_exchange).balance,
+            100449219912501890102,
+            "ether on LP wrong"
+        );
         assertEq(token.balanceOf(address(_exchange)), 100 ether);
     }
 
@@ -213,22 +256,52 @@ abstract contract BaseTest is Test {
         IExchange _exchange = IExchange(exchange_address);
         IExchange _exchange2 = IExchange(_f.createExchange(address(token2)));
 
-        _exchange.addLiquidity{value: 100 ether}(0, 100 ether, block.timestamp + 1);
+        vm.label(address(_exchange), "exchange token 1");
+        vm.label(address(_exchange2), "exchange token 2");
+        vm.label(address(this), "user");
+
+        _exchange.addLiquidity{value: 100 ether}(
+            0,
+            100 ether,
+            block.timestamp + 1
+        );
         token2.approve(address(_exchange2), type(uint256).max);
-        _exchange2.addLiquidity{value: 80 ether}(0, 80 ether, block.timestamp + 1);
+        _exchange2.addLiquidity{value: 80 ether}(
+            0,
+            80 ether,
+            block.timestamp + 1
+        );
 
         uint256 _gasleft = gasleft();
-        _exchange.tokenToTokenSwapInput(1 ether, 1, 1, block.timestamp + 1, address(token2));
+        _exchange.tokenToTokenSwapInput(
+            1 ether,
+            1,
+            1,
+            block.timestamp + 1,
+            address(token2)
+        );
         console.log("gasUsage", _gasleft - gasleft());
     }
 
-    function testSwapTokenToTokenMultipleTimes() public {
+    function testSwapTokesToTokenMultipleTimes() public {
         IExchange _exchange = IExchange(exchange_address);
         IExchange _exchange2 = IExchange(_f.createExchange(address(token2)));
 
-        _exchange.addLiquidity{value: 100 ether}(0, 100 ether, block.timestamp + 1);
+        vm.label(address(_exchange), "exchange token 1");
+        vm.label(address(_exchange2), "exchange token 2");
+        vm.label(address(this), "user");
+
+        _exchange.addLiquidity{value: 100 ether}(
+            0,
+            100 ether,
+            block.timestamp + 1
+        );
         token2.approve(address(_exchange2), type(uint256).max);
-        _exchange2.addLiquidity{value: 80 ether}(0, 80 ether, block.timestamp + 1);
+        _exchange2.addLiquidity{value: 80 ether}(
+            0,
+            80 ether,
+            block.timestamp + 1
+        );
 
         address bob = makeAddr("bob");
         deal(bob, 1 ether);
@@ -238,13 +311,28 @@ abstract contract BaseTest is Test {
         token2.approve(address(_exchange2), type(uint256).max);
         uint256 tokensBought;
         uint256 newTokensBought;
-        tokensBought = _exchange.ethToTokenSwapInput{value: bob.balance}(1, block.timestamp + 1);
+        tokensBought = _exchange.ethToTokenSwapInput{value: bob.balance}(
+            1,
+            block.timestamp + 1
+        );
 
         for (uint256 i; i < 100; ++i) {
             assertEq(tokensBought, token.balanceOf(bob));
-            newTokensBought = _exchange.tokenToTokenSwapInput(tokensBought, 1, 1, block.timestamp + 1, address(token2));
+            newTokensBought = _exchange.tokenToTokenSwapInput(
+                tokensBought,
+                1,
+                1,
+                block.timestamp + 1,
+                address(token2)
+            );
             assertEq(newTokensBought, token2.balanceOf(bob));
-            tokensBought = _exchange2.tokenToTokenSwapInput(newTokensBought, 1, 1, block.timestamp + 1, address(token));
+            tokensBought = _exchange2.tokenToTokenSwapInput(
+                newTokensBought,
+                1,
+                1,
+                block.timestamp + 1,
+                address(token)
+            );
         }
 
         // amount expexte according to univ1 (tested as a blackbox)

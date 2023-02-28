@@ -47,8 +47,7 @@
     call      // [success, exchangeAddr, ethBought]
 
     // Revert if call is unsuccessful
-    //! todo validate that data.length == 0
-    _success jumpi
+    iszero iszero _success jumpi
     0x00 dup1 revert
     
     _success:             // [exchangeAddr, ethBought]
@@ -159,7 +158,7 @@
   address                         // [address(this), tokenAddress, tokensSold, tokensSold, minEth, tokenAddress, tokenRecipient]
   GET_TOKEN_BALANCE_OF_STATIC()   // [tokenReserve, tokensSold, tokensSold, minEth, tokenAddress, tokenRecipient]
 
-  selfbalance                     // [ethBalance, tokenReserve, tokensSold, tokensSold, minEth, tokenAddress, tokenRecipient]
+  selfbalance                     // [address(this).balance, tokenReserve, tokensSold, tokensSold, minEth, tokenAddress, tokenRecipient]
   GET_INPUT_PRICE()               // [ethBought, tokensSold, minEth, tokenAddress, tokenRecipient]
 
   swap2                           // [minEth, tokensSold, ethBought, tokenAddress, tokenRecipient]
@@ -372,7 +371,7 @@
   staticcall  // [success, tokenAddress]
 
   // Revert if call is unsuccessful
-  _success jumpi
+  iszero iszero _success jumpi
   0x00 dup1 revert
   
   _success:             // [tokenAddress]

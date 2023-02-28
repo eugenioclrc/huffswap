@@ -355,77 +355,81 @@
     // exchangeAddress != address(0)
     dup1 IS_NOT_ADDRESS_ZERO()
     
-    // deadline
-    0x64    calldataload        // [deadline, exchangeAddress]
-    // deadline >= block.timestamp
-    dup1 VALIDATE_DEADLINE()
-
-    0x44    calldataload        // [minEthBought, deadline, exchangeAddress]
-    // minEthBough != 0
-    dup1 IS_NOT_ZERO()
-
-    0x24    calldataload        // [minTokensBought, minEthBought, deadline, exchangeAddress]
-    // minTokensBought != 0
-    dup1 IS_NOT_ZERO()
-
-    0x04    calldataload        // [tokensSold, minTokensBought, minEthBought, deadline, exchangeAddress]
-    // tokensSold != 0
-    dup1 IS_NOT_ZERO()
- 
-    0x00 GET_ARG_ADDRESS()
-    address           
-    GET_TOKEN_BALANCE_OF_STATIC()   // [tokensReserve, tokensSold, minTokensBought, minEthBought, deadline, exchangeAddress]
+    // exchangeAddress != address(this)
+    dup1 address eq iszero _exchange_is_not_this_one jumpi
+    0x00 dup1 revert
     
-    dup2                            // [tokensSold, tokensReserve, tokensSold, minTokensBought, minEthBought, deadline, exchangeAddress]
-    swap1                           // [tokenReseve, tokensSold, tokensSold, minTokensBought, minEthBought, deadline, exchangeAddress]
-    selfbalance                     // [address(this).balance, tokenReseve, tokensSold, tokensSold, minTokensBought, minEthBought, deadline, exchangeAddress]
-    GET_INPUT_PRICE()               // [ethBought, tokensSold, minTokensBought, minEthBought, deadline, exchangeAddress]
+    _exchange_is_not_this_one:
+        // deadline
+        0x64    calldataload        // [deadline, exchangeAddress]
+        // deadline >= block.timestamp
+        dup1 VALIDATE_DEADLINE()
 
-    swap3                           // [minEthBought, tokensSold, minTokensBought, ethBought, deadline, exchangeAddress]
-    dup4                            // [ethBought, minEthBought, tokensSold, minTokensBought, ethBought, deadline, exchangeAddress]
-    VALIDATE_ETH_RECEIVE()          // [tokensSold, minTokensBought, ethBought, deadline, exchangeAddress]
+        0x44    calldataload        // [minEthBought, deadline, exchangeAddress]
+        // minEthBough != 0
+        dup1 IS_NOT_ZERO()
 
-    0x00 GET_ARG_ADDRESS()          // [exchangeTokenAddress, tokensSold, minTokensBought, ethBought, deadline, exchangeAddress]
+        0x24    calldataload        // [minTokensBought, minEthBought, deadline, exchangeAddress]
+        // minTokensBought != 0
+        dup1 IS_NOT_ZERO()
 
-    dup2                            // [tokensSold, exchangeTokenAddress, tokensSold, minTokensBought, ethBought, deadline, exchangeAddress]
-    address                         // [address(this), tokensSold, exchangeTokenAddress, tokensSold, minTokensBought, ethBought, deadline, exchangeAddress]
-    caller                          // [msg.sender, address(this), tokensSold, exchangeTokenAddress, tokensSold, minTokensBought, ethBought, deadline, exchangeAddress]
-    SAFE_TRANSFER_FROM(0x00)        // [tokensSold, minTokensBought, ethBought, deadline, exchangeAddress]
-
-    swap4                           // [exchangeAddress, minTokensBought, ethBought, deadline, tokensSold]
-    swap1                           // [minTokensBought, exchangeAddress, ethBought, deadline, tokensSold]
-    swap3                           // [deadline, exchangeAddress, ethBought, minTokensBought, tokensSold]
-    swap2                           // [ethBought, exchangeAddress, deadline, minTokensBought, tokensSold]
-    swap1                           // [exchangeAddress, ethBought, deadline, minTokensBought, tokensSold]
+        0x04    calldataload        // [tokensSold, minTokensBought, minEthBought, deadline, exchangeAddress]
+        // tokensSold != 0
+        dup1 IS_NOT_ZERO()
     
-    // [exchangeAddress, ethBought, deadline, minTokensBought]
-    CALL_ETH_TO_TOKEN_SWAP_INPUT()  // [tokensBought, tokensSold]    
+        0x00 GET_ARG_ADDRESS()
+        address           
+        GET_TOKEN_BALANCE_OF_STATIC()   // [tokensReserve, tokensSold, minTokensBought, minEthBought, deadline, exchangeAddress]
+        
+        dup2                            // [tokensSold, tokensReserve, tokensSold, minTokensBought, minEthBought, deadline, exchangeAddress]
+        swap1                           // [tokenReseve, tokensSold, tokensSold, minTokensBought, minEthBought, deadline, exchangeAddress]
+        selfbalance                     // [address(this).balance, tokenReseve, tokensSold, tokensSold, minTokensBought, minEthBought, deadline, exchangeAddress]
+        GET_INPUT_PRICE()               // [ethBought, tokensSold, minTokensBought, minEthBought, deadline, exchangeAddress]
 
-    swap1                           // [tokensSold, tokensBought]
+        swap3                           // [minEthBought, tokensSold, minTokensBought, ethBought, deadline, exchangeAddress]
+        dup4                            // [ethBought, minEthBought, tokensSold, minTokensBought, ethBought, deadline, exchangeAddress]
+        VALIDATE_ETH_RECEIVE()          // [tokensSold, minTokensBought, ethBought, deadline, exchangeAddress]
 
-    // EVENT
-    // tokensSold
-    0x00
-    mstore                          // [tokensBought]
+        0x00 GET_ARG_ADDRESS()          // [exchangeTokenAddress, tokensSold, minTokensBought, ethBought, deadline, exchangeAddress]
 
-    // tokensBought
-    dup1
-    0x20
-    mstore                          
+        dup2                            // [tokensSold, exchangeTokenAddress, tokensSold, minTokensBought, ethBought, deadline, exchangeAddress]
+        address                         // [address(this), tokensSold, exchangeTokenAddress, tokensSold, minTokensBought, ethBought, deadline, exchangeAddress]
+        caller                          // [msg.sender, address(this), tokensSold, exchangeTokenAddress, tokensSold, minTokensBought, ethBought, deadline, exchangeAddress]
+        SAFE_TRANSFER_FROM(0x00)        // [tokensSold, minTokensBought, ethBought, deadline, exchangeAddress]
 
-    caller                              // [msg.sender, tokensBought]
-    
-    __EVENT_HASH(TokenToTokenPurchase)  // [event_hash, msg.sender, tokensBought]
-    0x00
-    0x40
-    log1  
+        swap4                           // [exchangeAddress, minTokensBought, ethBought, deadline, tokensSold]
+        swap1                           // [minTokensBought, exchangeAddress, ethBought, deadline, tokensSold]
+        swap3                           // [deadline, exchangeAddress, ethBought, minTokensBought, tokensSold]
+        swap2                           // [ethBought, exchangeAddress, deadline, minTokensBought, tokensSold]
+        swap1                           // [exchangeAddress, ethBought, deadline, minTokensBought, tokensSold]
+        
+        CALL_ETH_TO_TOKEN_SWAP_INPUT()  // [tokensBought, tokensSold]    
 
-    0x00
-    mstore
+        swap1                           // [tokensSold, tokensBought]
 
-    0x20
-    0x00
-    return                              // [tokensBought]
+        // EVENT
+        // tokensSold
+        0x00
+        mstore                          // [tokensBought]
+
+        // tokensBought
+        dup1
+        0x20
+        mstore                          
+
+        caller                              // [msg.sender, tokensBought]
+        
+        __EVENT_HASH(TokenToTokenPurchase)  // [event_hash, msg.sender, tokensBought]
+        0x00
+        0x40
+        log1  
+
+        0x00
+        mstore
+
+        0x20
+        0x00
+        return                              // [tokensBought]
 }
 
 #define macro GET_TOKEN_EXCHANGE() = takes(1) returns(1) {
@@ -451,7 +455,7 @@
     staticcall                                  // [success]
 
     // Revert if call is unsuccessful
-    _success jumpi
+    iszero iszero _success jumpi
     0x00 dup1 revert
     
     _success:                                   // []
