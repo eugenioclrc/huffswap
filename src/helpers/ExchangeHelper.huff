@@ -1,5 +1,5 @@
 #include "huffmate/tokens/ERC20.huff"
-#include "./helpers/SwapHelper.huff"
+#include "./SwapHelper.huff"
 
 #define macro CALCULATE_TRANSFERS_REMOVE_FOR_LIQUIDITY() = takes (3) returns (2) {
     // Input Stack: [totalLp, removeLp, tokenAddress]
