@@ -19,6 +19,16 @@ To make it comparable to uniswap V1 i have to avoid using a Reentrancy guard thi
 | swapTokenEth     | 16999   | 13595    | 3404   | 20,02%          |
 | swapTokenToToken | 28406   | 20098    | 8308   | 29,25%          |
 
+
+Lets make a gas budget, lets imagine 1 create pair, 5 add liquidity, 5 remove liquidity and 30 swaps (per each type of swap);
+
+	
+- Uniswap: 1432129
+- Huffswap:  1101268
+
+
+**Gas savings, around 30%** 
+
 ## Getting Started
 
 ### Requirements
