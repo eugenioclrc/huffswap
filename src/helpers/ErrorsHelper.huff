@@ -1,0 +1,50 @@
+#include "huffmate/utils/CommonErrors.huff"
+
+#define error ErrDeadlineExpired(uint256)
+#define error ErrEthOutput(uint256, uint256)
+#define error ErrTokensOutput(uint256)
+
+#define macro ERR_DEADLINE_EXPIRED() = takes(1) returns(0) {
+    // input stack: [deadline]
+    // throw error
+    __ERROR(ErrDeadlineExpired)       // [signature, deadline]
+    0x00 
+    mstore                            // [deadline]
+    0x04
+    mstore                            // []
+    
+    0x24
+    0x00
+    revert
+}
+
+#define macro ERR_ETH_OUTPUT() = takes(2) returns(0) {
+    // Input Stack:  [ethBought, minEth]
+    __ERROR(ErrEthOutput)     // [signature, ethBough, minEth]
+    0x00
+    mstore                    // [ethBough, minEth]
+
+    0x04
+    mstore                    // [minEth]
+    
+    0x24                        
+    mstore                    // []
+
+    0x44
+    0x00
+    revert
+}
+
+
+#define macro ERR_TOKENS_OUTPUT() = takes(1) returns(0) {
+    // input stack: [minTokens]
+    __ERROR(ErrTokensOutput)          // [signature, minTokens, tokensBought, recipient, tokenAddress]
+    0x00 
+    mstore                            // [minTokens, tokensBought, recipient, tokenAddress]
+    0x04
+    mstore                            // [tokensBought, recipient, tokenAddress]]
+
+    0x24
+    0x00
+    revert
+}

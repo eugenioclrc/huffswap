@@ -1,11 +1,8 @@
-#include "huffmate/utils/CommonErrors.huff"
 #include "huffmate/utils/SafeTransferLib.huff"
 
-#define function balanceOf(address) view returns (uint256)
+#include "./ErrorsHelper.huff"
 
-#define error ErrDeadlineExpired(uint256)
-#define error ErrEthOutput(uint256, uint256)
-#define error ErrTokensOutput(uint256)
+#define function balanceOf(address) view returns (uint256)
 
 #define event EthPurchase(address indexed buyer, address recipient, uint256 tokens_sold, uint256 eth_bought)
 #define event TokenPurchase(address indexed buyer, address recipient, uint256 eth_sold, uint256 tokens_bought)
@@ -92,13 +89,7 @@
   jumpi
   dup2
   // throw error
-  __ERROR(ErrTokensOutput)          // [signature, minTokens, tokensBought, recipient, tokenAddress]
-  0x00 
-  mstore                            // [minTokens, tokensBought, recipient, tokenAddress]
-  0x04
-  mstore                            // [tokensBought, recipient, tokenAddress]
-
-  0x24 0x00 revert
+  ERR_TOKENS_OUTPUT()
 
   _continue:              // [minTokens, tokensBought, recipient, tokenAddress]
     pop                   // [tokensBought, recipient, tokenAddress]
@@ -205,19 +196,7 @@
   _continue
   jumpi
   
-  __ERROR(ErrEthOutput)     // [signature, ethBough, minEth]
-  0x00
-  mstore                    // [ethBough, minEth]
-
-  0x04
-  mstore                    // [minEth]
-  
-  0x24                        
-  mstore                    // []
-
-  0x44
-  0x00
-  revert
+  ERR_ETH_OUTPUT()
 
   _continue: // [ethBough, minEth]
     pop
@@ -240,16 +219,7 @@
   _continue
   jumpi
 
-  // throw error
-  __ERROR(ErrDeadlineExpired)       // [signature, deadline]
-  0x00 
-  mstore                            // [deadline]
-  0x04
-  mstore                            // []
-  
-  0x24
-  0x00
-  revert
+  ERR_DEADLINE_EXPIRED()
 
   _continue:
 }
