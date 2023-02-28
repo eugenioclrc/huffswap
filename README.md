@@ -8,6 +8,17 @@ A Huff implementation of UniswapV1.
 
 To make it comparable to uniswap V1 i have to avoid using a Reentrancy guard this is just a POC of a minimal AMM with low gas consumptions build for the ETH Denver hackaton. DO NOT USE IT IN PRODUCTION.
 
+## Gas Savings
+
+| method           | Uniswap | Huffswap | delta  | percent cheaper |
+|------------------|---------|----------|--------|-----------------|
+| createExchange   | 227994  | 106858   | 121136 | 53,13%          |
+| addLiquidity     | 99367   | 91304    | 8063   | 8,11%           |
+| removeLiquidity  | 18150   | 14286    | 3864   | 21,29%          |
+| swapEthToken     | 16250   | 12953    | 3297   | 20,29%          |
+| swapTokenEth     | 16999   | 13595    | 3404   | 20,02%          |
+| swapTokenToToken | 28406   | 20098    | 8308   | 29,25%          |
+
 ## Getting Started
 
 ### Requirements
