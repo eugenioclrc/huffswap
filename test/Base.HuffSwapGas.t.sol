@@ -16,9 +16,20 @@ contract HuffswapGasTest is BaseTest {
         address _factory = 0x9aCe4Afab142FbCBc90e317977a6800076bD64bA;
         // address _exchange = HuffDeployer.get_config_with_create_2(1);
 
-        exchange = HuffDeployer.config().with_addr_constant("FACTORY_ADDRESS", _factory).deploy("Exchange");
+        exchange = HuffDeployer.config()
+            .with_addr_constant("FACTORY_ADDRESS", _factory)
+            // Huffswap V1
+            .with_constant("META_NAME", "0x4875666673776170205631000000000000000000000000000000000000000000")
+            // 11
+            .with_constant("META_NAME_LENGTH", "0x0b")
+            // "UNI-V1"
+            .with_constant("META_SYMBOL", "0x554e492d56310000000000000000000000000000000000000000000000000000")
+            .with_constant("META_SYMBOL_LENGTH", "0x06")
+            .deploy("Exchange");
 
-        factory = HuffDeployer.config().with_addr_constant("EXCHANGE_IMPLEMENTATION", exchange).deploy("Factory");
+        factory = HuffDeployer.config()
+            .with_addr_constant("EXCHANGE_IMPLEMENTATION", exchange)
+            .deploy("Factory");
 
         vm.label(factory, "Factory");
         vm.label(exchange, "Exchange");
@@ -34,13 +45,10 @@ contract HuffswapGasTest is BaseTest {
         // LP metadata
         IExchange _exchange = IExchange(exchange_address);
 
-        /*
-        // -HACK univ1 response metadata is in bytes32 format and ERC20 standar in string
-        (, bytes memory _name) = exchange_address.call(abi.encodeWithSignature("name()"));
-        assertEq(bytes32(_name), bytes32("Uniswap V1"));
-        (, bytes memory _symbol) = exchange_address.call(abi.encodeWithSignature("symbol()"));
-        assertEq(bytes32(_symbol), bytes32("UNI-V1"));
+        // 0x4875666673776170205631000000000000000000000000000000000000000000
+        assertEq(_exchange.name(), "Huffswap V1");
+        // 0x554e492d56310000000000000000000000000000000000000000000000000000
+        assertEq(_exchange.symbol(), "UNI-V1");
         assertEq(_exchange.decimals(), 18);
-        */
     }
 }
