@@ -47,7 +47,10 @@ abstract contract BaseTest is Test {
 
         uint256 _gasleft = gasleft();
         address _foo = _f.createExchange(address(token2));
-        console.log("gasUsage", _gasleft - gasleft());
+        uint256 _gasEnd = gasleft();
+        console.log("gasUsage", _gasleft - _gasEnd);
+        //gasCreateExchange = _gasleft - _gasEnd;
+    
         assertEq(_f.tokenCount(), 2);
         assertEq(_foo, _f.getExchange(address(token2)));
 
@@ -77,15 +80,19 @@ abstract contract BaseTest is Test {
             100 ether,
             block.timestamp + 1
         );
-        console.log("gasUsage", _gasleft - gasleft());
+        uint256 _gasEnd = gasleft();
+
+        console.log("gasUsage", _gasleft - _gasEnd);
+        //gasAddLiquidity = _gasleft - _gasEnd;
         /*
         _gasleft = gasleft();
         _exchange.addLiquidity{value: 50 ether}(0, 50 ether, block.timestamp + 1);
         console.log("gasUsage 2", _gasleft - gasleft());
 
         assertEq(_exchange.totalSupply(), 150 ether);
+        
         */
-        assertEq(_exchange.totalSupply(), 100 ether);
+       assertEq(_exchange.totalSupply(), 100 ether);
     }
 
     function testRemoveLiquidity() public {
@@ -104,8 +111,9 @@ abstract contract BaseTest is Test {
         //_exchange.removeLiquidity(addedLiquidity, 0, 0, block.timestamp + 1);
         uint256 _gasleft = gasleft();
         _exchange.removeLiquidity(addedLiquidity, 1, 1, block.timestamp + 1);
-        console.log("gasUsage", _gasleft - gasleft());
-
+        uint256 _gasEnd = gasleft();
+        console.log("gasUsage", _gasleft - _gasEnd);
+        //gasRemoveLiquidity = _gasleft - _gasEnd;
         // this test its only for uni v1...
         // should have received 100 ether and 100 tokens
         assertEq(address(this).balance, etherPrev + 100 ether);
@@ -158,8 +166,10 @@ abstract contract BaseTest is Test {
             swap1,
             block.timestamp + 1
         );
-        console.log("gasUsage", _gasleft - gasleft());
-
+        uint256 _gasEnd = gasleft();
+        console.log("gasUsage", _gasleft - _gasEnd);
+        //gasEthToTokenSwapInput = _gasleft - _gasEnd;
+        
         // spent 1 ether
         assertEq(ethBefore - address(this).balance, 1 ether);
         // received 85.894 tokens
@@ -206,7 +216,9 @@ abstract contract BaseTest is Test {
 
         uint256 _gasleft = gasleft();
         _exchange.tokenToEthSwapInput(1 ether, swap1, block.timestamp + 1);
-        console.log("gasUsage", _gasleft - gasleft());
+        uint256 _gasEnd = gasleft();
+        console.log("gasUsage", _gasleft - _gasEnd);
+        //gasTokenToEthSwapInput = _gasleft - _gasEnd;
 
         // spent 1 ether tokens
         assertEq(tokenBefore - token.balanceOf(address(this)), 1 ether);
@@ -280,7 +292,9 @@ abstract contract BaseTest is Test {
             block.timestamp + 1,
             address(token2)
         );
-        console.log("gasUsage", _gasleft - gasleft());
+        uint256 _gasEnd = gasleft();
+        console.log("gasUsage", _gasleft - _gasEnd);
+        //gasTokenToTokenSwapInput = _gasleft - _gasEnd;
     }
 
     function testSwapTokesToTokenMultipleTimes() public {
