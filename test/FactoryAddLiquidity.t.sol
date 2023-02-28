@@ -10,7 +10,7 @@ import {ERC20} from "solmate/tokens/ERC20.sol";
 
 contract ERC20Mock is ERC20("Mock", "MOCK", 18) {
     constructor() {
-        _mint(msg.sender, 1000000000000000000000000);
+        _mint(msg.sender, 10000 ether);
     }
 }
 
@@ -71,5 +71,33 @@ contract FactoryAddTest is Test {
         IExchange(_exchange).addLiquidity{value: 1000}(1, 1010, block.timestamp + 99);
         gas = gas - gasleft();
         console.log("Total gas spend adding liquidity", gas);
+    }
+
+     function testAddLiquiditySimple() public {
+        IFactory _factory = IFactory(factory);
+        address _token = address(token);
+
+        address _exchange = _factory.createExchange(_token);
+
+        token.approve(_exchange, type(uint256).max);
+        uint256 gas = gasleft();
+        IExchange(_exchange).addLiquidity{value: 100 ether}(0, 100 ether, block.timestamp + 99);
+        gas = gas - gasleft();
+        console.log("Total gas spend adding liquidity", gas);
+
+        gas = gasleft();
+        IExchange(_exchange).addLiquidity{value: 1 ether}(1, 1 ether, block.timestamp + 99);
+        gas = gas - gasleft();
+        console.log("Total gas spend adding liquidity", gas);
+
+        address user = makeAddr("user");
+        vm.deal(user, 2 ether);
+        token.transfer(user, 100 ether);
+        vm.startPrank(user);
+        token.approve(_exchange, type(uint256).max);
+        IExchange(_exchange).addLiquidity{value: 1 ether}(1, 1 ether, block.timestamp + 99);
+        vm.stopPrank();
+
+
     }
 }
