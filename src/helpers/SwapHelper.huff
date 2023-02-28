@@ -11,111 +11,51 @@
 #define event TokenPurchase(address indexed buyer, address recipient, uint256 eth_sold, uint256 tokens_bought)
 #define event TokenToTokenPurchase(address indexed buyer, uint256 tokens_sold, uint256 tokens_bought)
 
-#define macro TOKEN_TO_TOKEN_SWAP_INPUT() = takes(6) returns(1) {
-  // Input Stack:   [tokensSold, minTokensBought, minEthBought, deadline, tokenAddr, exchangeAddr]
-  // Output Stack:  [tokensBought]
-
-  dup4                    // [deadline, tokensSold, minTokensBought, minEthBought, deadline, tokenAddr, exchangeAddr]
-  // deadline >= block.timestamp
-  VALIDATE_DEADLINE()     // [tokensSold, minTokensBought, minEthBought, deadline, tokenAddr, exchangeAddr]
-
-  // tokensSold != 0
-  dup1
-  IS_NOT_ZERO()
-
-  // minTokensBought != 0
-  dup2        
-  IS_NOT_ZERO()
-
-  // minEthBought != 0            
-  dup3        
-  IS_NOT_ZERO()
-  
-  dup5
-  address           
-  GET_TOKEN_BALANCE_OF_STATIC()   // [tokenReseve, tokensSold, minTokensBought, minEthBought, deadline, tokenAddr, exchangeAddr]
-
-  dup2                            // [tokensSold, tokenReseve, tokensSold, minTokensBought, minEthBought, deadline, tokenAddr, exchangeAddr]
-  swap1                           // [tokenReseve, tokensSold, tokensSold, minTokensBought, minEthBought, deadline, tokenAddr, exchangeAddr]
-  selfbalance                     // [address(this).balance, tokenReseve, tokensSold, tokensSold, minTokensBought, minEthBought, deadline, tokenAddr, exchangeAddr]
-  GET_INPUT_PRICE()               // [ethBought, tokensSold, minTokensBought, minEthBought, deadline, tokenAddr, exchangeAddr]
-
-  swap4                           // [minEthBought, tokensSold, minTokensBought, ethBought, deadline, tokenAddr, exchangeAddr]
-  dup4                            // [ethBought, minEthBought, tokensSold, minTokensBought, ethBought, deadline, tokenAddr, exchangeAddr]
-  VALIDATE_ETH_RECEIVE()          // [tokensSold, minTokensBought, ethBought, deadline, tokenAddr, exchangeAddr]
-
-  swap5                           // [tokenAddr, minTokensBought, ethBought, deadline, tokensSold, exchangeAddr]
-  dup5                            // [tokensSold, tokenAddr, minTokensBought, ethBought, deadline, tokensSold, exchangeAddr]
-  address                         // [address(this), tokensSold, tokenAddr, minTokensBought, ethBought, deadline, tokensSold, exchangeAddr]
-  caller                          // [msg.sender, address(this), tokensSold, tokenAddr, minTokensBought, ethBought, deadline, tokensSold, exchangeAddr]
-  SAFE_TRANSFER_FROM(0x00)        // [minTokensBought, ethBought, deadline, tokensSold, exchangeAddr]
-
-  swap3                           // [tokensSold, ethBought, deadline, minTokensBought, exchangeAddr]
-  swap4                           // [exchangeAddr, ethBought, deadline, minTokensBought, tokensSold]
-
-  CALL_ETH_TO_TOKEN_SWAP_INPUT()  // [tokensBought, tokensSold]
-
-  // EVENT
-  // tokensBought
-  0x20
-  mstore                          
-
-  // tokensSold
-  0x00
-  mstore                          // []
-
-  caller                          // [msg.sender]
-  
-  __EVENT_HASH(TokenToTokenPurchase) // [event_hash, msg.sender]
-  0x00
-  0x40
-  log1  
-}
-
 #define macro CALL_ETH_TO_TOKEN_SWAP_INPUT() = takes(4) returns(1) {
-  // Input Stack:   [exchangeAddr, ethBought, deadline, minTokensBought]
-  // Output Stack:  [tokensBought]
+    // Input Stack:   [exchangeAddr, ethBought, deadline, minTokensBought]
+    // Output Stack:  [tokensBought]
 
-  __FUNC_SIG("ethToTokenSwapInput(uint256,uint256,address)")
-  0xE0 shl
-  0x00 mstore
+    __FUNC_SIG("ethToTokenSwapInput(uint256,uint256,address)")
+    0xE0 shl
+    0x00 mstore
 
-  swap3           // [minTokensBought, ethBought, deadline, exchangeAddr]
-  0x04
-  mstore          // [ethBought, deadline, exchangeAddr]
+    swap3           // [minTokensBought, ethBought, deadline, exchangeAddr]
+    0x04
+    mstore          // [ethBought, deadline, exchangeAddr]
 
-  swap1           // [deadline, ethBought, exchangeAddr]
-  0x24
-  mstore          // [ethBought, exchangeAddr]
+    swap1           // [deadline, ethBought, exchangeAddr]
+    0x24
+    mstore          // [ethBought, exchangeAddr]
 
-  caller
-  0x44
-  mstore
+    caller
+    0x44
+    mstore
+    
+    swap1     // [exchangeAddr, ethBought]
 
-  swap1     // [exchangeAddr, ethBought]
+    0x20      // [retSize, exchangeAddr, ethBought]
+    0x00      // [retOffset, retSize, exchangeAddr, ethBought]
+    0x64      // [argsSize, retOffset, retSize, exchangeAddr, ethBought]
+    0x00      // [argsOffset, argsSize, retOffset, retSize, exchangeAddr, ethBought]  
+    
+    dup6      // [ethBought, argsOffset, argsSize, retOffset, retSize, exchangeAddr, ethBought]  
 
-  0x20      // [retSize, exchangeAddr, ethBought]
-  0x00      // [retOffset, retSize, exchangeAddr, ethBought]
-  0x64      // [argsSize, retOffset, retSize, exchangeAddr, ethBought]
-  0x00      // [argsOffset, argsSize, retOffset, retSize, exchangeAddr, ethBought]  
-  
-  dup6      // [ethBought, argsOffset, argsSize, retOffset, retSize, exchangeAddr, ethBought]  
+    dup6      // [exchangeAddr, ethBought, argsOffset, argsSize, retOffset, retSize, exchangeAddr, ethBought]  
+    
+    gas       // [gas, exchangeAddr, ethBought, argsOffset, argsSize, retOffset, retSize,  exchangeAddr, ethBought]  
+    
+    call      // [success, exchangeAddr, ethBought]
 
-  dup5      // [exchangeAddr, ethBought, argsOffset, argsSize, retOffset, retSize, exchangeAddr, ethBought]  
-  
-  gas       // [gas, exchangeAddr, ethBought, argsOffset, argsSize, retOffset, retSize,  exchangeAddr, ethBought]  
-  
-  call      // [success, exchangeAddr, ethBought]
-
-  // Revert if call is unsuccessful
-  _success jumpi
-  0x00 dup1 revert
-  
-  _success:             // [exchangeAddr, ethBought]
-    pop                 // cleaning stack
-    pop
-    0x00
-    mload               // [tokensBought]
+    // Revert if call is unsuccessful
+    //! todo validate that data.length == 0
+    _success jumpi
+    0x00 dup1 revert
+    
+    _success:             // [exchangeAddr, ethBought]
+      pop                 // cleaning stack
+      pop
+      0x00
+      mload               // [tokensBought]
 }
 
 #define macro ETH_TO_TOKEN_SWAP_INPUT() = takes(4) returns(1) {
@@ -436,7 +376,7 @@
   0x00 dup1 revert
   
   _success:             // [tokenAddress]
-    pop // cleaning stack
+    pop                 // clean stack
     0x00
     mload               // [balance] 
 }
