@@ -9,7 +9,6 @@
 
 #define event EthPurchase(address indexed buyer, address recipient, uint256 tokens_sold, uint256 eth_bought)
 #define event TokenPurchase(address indexed buyer, address recipient, uint256 eth_sold, uint256 tokens_bought)
-#define event TokenToTokenPurchase(address indexed buyer, uint256 tokens_sold, uint256 tokens_bought)
 
 #define macro CALL_ETH_TO_TOKEN_SWAP_INPUT() = takes(4) returns(1) {
     // Input Stack:   [exchangeAddr, ethBought, deadline, minTokensBought]
@@ -97,11 +96,9 @@
   0x00 
   mstore                            // [minTokens, tokensBought, recipient, tokenAddress]
   0x04
-  mstore                            // [tokensBought, recipient, tokenAddress]]
+  mstore                            // [tokensBought, recipient, tokenAddress]
 
-  0x24
-  0x00
-  revert
+  0x24 0x00 revert
 
   _continue:              // [minTokens, tokensBought, recipient, tokenAddress]
     pop                   // [tokensBought, recipient, tokenAddress]
@@ -114,7 +111,6 @@
     // (address indexed buyer, address recipient, uint256 eth_sold, uint256 tokens_bought)
 
     // EVENT
-    // todo: fix event
     // recipient
     0x00
     mstore            // [tokensBought]
@@ -131,9 +127,7 @@
 
     caller
     __EVENT_HASH(TokenPurchase)       // [event_hash, caller, tokensBought]
-    0x00
-    0x60
-    log2  
+    0x60 0x00 log2  
 }
 
 #define macro TOKEN_TO_ETH_SWAP_INPUT() = takes(5) returns(0) {
@@ -194,9 +188,7 @@
   caller                          // [msg.sender]
   
   __EVENT_HASH(EthPurchase)       // [event_hash, msg.sender]
-  0x00
-  0x40
-  log2                            // []
+  0x40 0x00 log2                  // []
 }
 
 #define macro VALIDATE_ETH_RECEIVE() = takes(2) returns(0) {

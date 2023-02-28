@@ -27,6 +27,7 @@
 #define function tokenToTokenSwapInput(uint256 tokens_sold, uint256 min_tokens_bought, uint256 min_eth_bought, uint256 deadline, address token_addr) nonpayable returns (uint256 tokens_bought)
 
 #define event Initialized()
+#define event TokenToTokenPurchase(address indexed buyer, uint256 tokens_sold, uint256 tokens_bought)
 
 #define constant FACTORY_ADDRESS = 0x0000000000000000000000000000000000000000
 
@@ -417,12 +418,10 @@
         0x20
         mstore                          
 
+        // #define event TokenToTokenPurchase(address indexed buyer, uint256 tokens_sold, uint256 tokens_bought)
         caller                              // [msg.sender, tokensBought]
-        
         __EVENT_HASH(TokenToTokenPurchase)  // [event_hash, msg.sender, tokensBought]
-        0x00
-        0x40
-        log2  
+        0x40 0x00 log2 //  [0x40, 0x00, event_hash, msg.sender, tokensBought]
 
         0x00
         mstore
