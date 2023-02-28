@@ -4,6 +4,9 @@
 
 A Huff implementation of UniswapV1.
 
+## Security concerns
+
+To make it comparable to uniswap V1 i have to avoid using a Reentrancy guard this is just a POC of a minimal AMM with low gas consumptions build for the ETH Denver hackaton. DO NOT USE IT IN PRODUCTION.
 
 ## Getting Started
 
@@ -56,15 +59,11 @@ For more information on how to use Foundry, check out the [Foundry Github Reposi
 ## Blueprint
 
 ```ml
-lib
-├─ forge-std — https://github.com/foundry-rs/forge-std
-├─ foundry-huff — https://github.com/huff-language/foundry-huff
 scripts
 ├─ Deploy.s.sol — Deployment Script
 src
-├─ SimpleStore — A Simple Storage Contract in Huff
-test
-└─ SimpleStore.t — SimpleStoreTests
+├─ Exchange — LP token implementation
+├─ Factory  — Factory of LP Tokens
 ```
 
 
@@ -77,6 +76,7 @@ test
 
 - [forge-template](https://github.com/foundry-rs/forge-template)
 - [femplate](https://github.com/abigger87/femplate)
+- [huffmate](https://github.com/pentagonxyz/huffmate)
 
 
 ## Disclaimer
