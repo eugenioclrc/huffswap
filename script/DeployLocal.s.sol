@@ -33,6 +33,13 @@ contract DeployLocal is Script {
             .config()
             .set_broadcast(true)
             .with_addr_constant("FACTORY_ADDRESS", _factory)
+            // Huffswap V1
+            .with_constant("META_NAME", "0x4875666673776170205631000000000000000000000000000000000000000000")
+            // 11
+            .with_constant("META_NAME_LENGTH", "0x0b")
+            // "UNI-V1"
+            .with_constant("META_SYMBOL", "0x554e492d56310000000000000000000000000000000000000000000000000000")
+            .with_constant("META_SYMBOL_LENGTH", "0x06")
             .deploy("Exchange");
 
         HuffDeployer
