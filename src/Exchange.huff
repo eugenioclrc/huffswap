@@ -422,7 +422,7 @@
         __EVENT_HASH(TokenToTokenPurchase)  // [event_hash, msg.sender, tokensBought]
         0x00
         0x40
-        log1  
+        log2  
 
         0x00
         mstore
