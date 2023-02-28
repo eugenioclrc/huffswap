@@ -13,7 +13,7 @@
 
 #define function initialize() nonpayable returns ()
 #define function addLiquidity(uint256 min_liquidity, uint256 max_tokens, uint256 deadline) payable returns (uint256 liquidity_minted)
-#define function removeLiquidity(uint256 amount, uint256 min_eth, uint256 min_tokens, uint256 deadline) nonpayable returns (uint256, uint256)
+#define function removeLiquidity(uint256 amount, uint256 min_eth, uint256 min_tokens, uint256 deadline) nonpayable returns (uint256 eth, uint256 tokenAmnt)
 
 #define function tokenAddress() view returns (address)
 #define function factory() view returns (address)
@@ -185,7 +185,10 @@
     dup1 // [eth_amount, eth_amount, token_amount,  removeLp, tokenAddress]
     0x24 calldataload 
     // [min_eth, eth_amount, eth_amount, token_amount, removeLp, tokenAddress]
-    gt __ethAmountOk jumpi
+    0x01 add
+    // [min_eth + 1, eth_amount, eth_amount, token_amount, removeLp, tokenAddress]
+
+    lt __ethAmountOk jumpi
         0x00 dup1 revert
     __ethAmountOk:
 
@@ -193,19 +196,31 @@
     swap1 // [token_amount, eth_amount,  removeLp, tokenAddress]
     dup1 // [token_amount, token_amount, eth_amount,  removeLp, tokenAddress]
     0x44 calldataload // [min_tokens, token_amount, token_amount, eth_amount,  removeLp, tokenAddress]
-    gt __tokenAmountOk jumpi
+    0x01 add
+    lt __tokenAmountOk jumpi
         0x00 dup1 revert
     __tokenAmountOk:
 
     // [token_amount, eth_amount, removeLp, tokenAddress]
     swap2
     // TODO emit remove liquidity event ??
+
     
     caller
-    // [account, removeLp, eth_amount, token_amount, tokenAddress]
+    swap1
+    // [removeLp, account, eth_amount, token_amount, tokenAddress]
     _BURN()
-
+    
     // [eth_amount, token_amount, tokenAddress]
+    dup1 
+    // [eth_amount, eth_amount, token_amount, tokenAddress]
+    0x60 mstore // in 0x60 is eth_amount
+
+    dup2
+    // [token_amount, eth_amount, token_amount, tokenAddress]
+    0x80 mstore // in 0x80 is token_amount
+
+    // [token_amount, eth_amount, token_amount, tokenAddress]
     swap2
     // [tokenAddress, token_amount, eth_amount]
     swap1
@@ -220,6 +235,8 @@
     caller
     // [caller, eth_amount]
     SAFE_TRANSFER_ETH()
+
+    0x40 0x60 return
 }
 /*
 #define macro CONSTRUCTOR() = takes (0) returns (0) {

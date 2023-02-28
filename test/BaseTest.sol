@@ -92,8 +92,8 @@ abstract contract BaseTest is Test {
         uint256 etherPrev = address(this).balance;
         uint256 tokenPrev = token.balanceOf(address(this));
 
-        // vm.expectRevert();
-        // _exchange.removeLiquidity(addedLiquidity, 0, 0, block.timestamp + 1);
+        //vm.expectRevert();
+        //_exchange.removeLiquidity(addedLiquidity, 0, 0, block.timestamp + 1);
         uint256 _gasleft = gasleft();
         _exchange.removeLiquidity(addedLiquidity, 1, 1, block.timestamp + 1);
         console.log("gasUsage", _gasleft - gasleft());
