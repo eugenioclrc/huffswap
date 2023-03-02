@@ -29,6 +29,21 @@ Lets make a gas budget, lets imagine 1 create pair, 5 add liquidity, 5 remove li
 
 **Gas savings, around 30%** 
 
+## Deployment
+
+Huffswap has been deployed so far on
+- [] Mantle
+- [X] Scroll
+- [] Neon EVM
+- [] Filecoin EVM
+- [] Polygon
+
+### Scroll
+
+Factory: [0x420fAd7011A85cc6C308941A7245b7c0E695Fe85](https://blockscout.scroll.io/address/0x420fAd7011A85cc6C308941A7245b7c0E695Fe85)<br />
+Exchange: [0x7a479AAe93f97F00117571ee1e61bacaB2C780A1](https://blockscout.scroll.io/address/0x7a479AAe93f97F00117571ee1e61bacaB2C780A1)
+
+
 ## Getting Started
 
 ### Requirements
