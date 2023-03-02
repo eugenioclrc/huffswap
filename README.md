@@ -4,6 +4,11 @@
 
 A Huff implementation of UniswapV1.
 
+
+**Why Uniswap V1 and not V2?**
+
+This is a proof of concept for a hackathon; because we only have a limited amount of time, we chose to reimplement V1 because it is simpler than V2.
+
 ## Security concerns
 
 To make it comparable to uniswap V1 i have to avoid using a Reentrancy guard this is just a POC of a minimal AMM with low gas consumptions build for the ETH Denver hackaton. DO NOT USE IT IN PRODUCTION.
