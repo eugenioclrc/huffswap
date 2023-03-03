@@ -37,17 +37,35 @@ Lets make a gas budget, lets imagine 1 create pair, 5 add liquidity, 5 remove li
 ## Deployment
 
 Huffswap has been deployed so far on
-- [] Mantle
+- [X] Mantle
 - [X] Scroll
-- [] Neon EVM
-- [] Filecoin EVM
+- [X] Neon EVM
+- [X] Filecoin EVM
 - [] Polygon
+
+### Mantle
+
+Factory: 0xD9D26e61D8F02AF7e1Dd8A72313770E6B00EAabB
+exchange: 0x8d867eC6107763cbfcCc71a98Cf3689E73d49C74
+
+
+Deployed via created2 using this contract:
+https://explorer.testnet.mantle.xyz/address/0xC26ab96b8d2Ad4E2e7e097025308Fe06d82255A1
 
 ### Scroll
 
 Factory: [0x420fAd7011A85cc6C308941A7245b7c0E695Fe85](https://blockscout.scroll.io/address/0x420fAd7011A85cc6C308941A7245b7c0E695Fe85)<br />
 Exchange: [0x7a479AAe93f97F00117571ee1e61bacaB2C780A1](https://blockscout.scroll.io/address/0x7a479AAe93f97F00117571ee1e61bacaB2C780A1)
 
+
+### NEON EVM
+
+factory: [0xfF6AE961405b4f3e3169e6640Cd1cA3083D58a7b](https://devnet.neonscan.org/tx/0x6bb8976515e8f097437379a506667f34456c406244deb512179a0b848af7a402)<br />
+exchange: [0x2Ca416EA2F4bb26ff448823EB38e533b60875C81](https://devnet.neonscan.org/tx/0xf89c0b6d285f920e196b422a9a914fefdbdad723d0e8e942d73b40e3a5bfb22e)
+
+### Filecoin EVM
+factory: address (0xacBC672c3612b4417588f98e783f30694b8f83Cb)[https://hyperspace.filfox.info/en/address/0xacBC672c3612b4417588f98e783f30694b8f83Cb]<br />
+exchange: (0x77bA1c193661EeF8653C69F8f7f825DF47614518)[https://hyperspace.filfox.info/en/address/0x77ba1c193661eef8653c69f8f7f825df47614518]
 
 ## Getting Started
 
