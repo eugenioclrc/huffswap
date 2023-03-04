@@ -34,6 +34,11 @@ Lets make a gas budget, lets imagine 1 create pair, 5 add liquidity, 5 remove li
 
 **Gas savings, around 30%** 
 
+## Huffswap frontend
+
+The Huffswap frontend is a fork of Uniswap frontend, you could find it in:
+https://github.com/nicobevilacqua/huffswap-frontend
+
 ## Deployment
 
 Huffswap has been deployed so far on
@@ -41,7 +46,7 @@ Huffswap has been deployed so far on
 - [X] Scroll
 - [X] Neon EVM
 - [X] Filecoin EVM
-- [] Polygon
+- [X] Polygon
 
 ### Mantle
 
@@ -66,6 +71,12 @@ exchange: [0x2Ca416EA2F4bb26ff448823EB38e533b60875C81](https://devnet.neonscan.o
 ### Filecoin EVM
 factory: address (0xacBC672c3612b4417588f98e783f30694b8f83Cb)[https://hyperspace.filfox.info/en/address/0xacBC672c3612b4417588f98e783f30694b8f83Cb]<br />
 exchange: (0x77bA1c193661EeF8653C69F8f7f825DF47614518)[https://hyperspace.filfox.info/en/address/0x77ba1c193661eef8653c69f8f7f825df47614518]
+
+
+### Polygon
+
+factory: address (0x420fAd7011A85cc6C308941A7245b7c0E695Fe85)[https://mumbai.polygonscan.com/address/0x420fad7011a85cc6c308941a7245b7c0e695fe85]<br />
+exchange: (0x7a479AAe93f97F00117571ee1e61bacaB2C780A1)[https://mumbai.polygonscan.com/address/0x7a479AAe93f97F00117571ee1e61bacaB2C780A1]
 
 ## Getting Started
 
