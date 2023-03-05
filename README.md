@@ -69,14 +69,14 @@ factory: [0xfF6AE961405b4f3e3169e6640Cd1cA3083D58a7b](https://devnet.neonscan.or
 exchange: [0x2Ca416EA2F4bb26ff448823EB38e533b60875C81](https://devnet.neonscan.org/tx/0xf89c0b6d285f920e196b422a9a914fefdbdad723d0e8e942d73b40e3a5bfb22e)
 
 ### Filecoin EVM
-factory: address (0xacBC672c3612b4417588f98e783f30694b8f83Cb)[https://hyperspace.filfox.info/en/address/0xacBC672c3612b4417588f98e783f30694b8f83Cb]<br />
-exchange: (0x77bA1c193661EeF8653C69F8f7f825DF47614518)[https://hyperspace.filfox.info/en/address/0x77ba1c193661eef8653c69f8f7f825df47614518]
+factory: address [0xacBC672c3612b4417588f98e783f30694b8f83Cb](https://hyperspace.filfox.info/en/address/0xacBC672c3612b4417588f98e783f30694b8f83Cb)<br />
+exchange: [0x77bA1c193661EeF8653C69F8f7f825DF47614518](https://hyperspace.filfox.info/en/address/0x77ba1c193661eef8653c69f8f7f825df47614518)
 
 
 ### Polygon
 
-factory: address (0x420fAd7011A85cc6C308941A7245b7c0E695Fe85)[https://mumbai.polygonscan.com/address/0x420fad7011a85cc6c308941a7245b7c0e695fe85]<br />
-exchange: (0x7a479AAe93f97F00117571ee1e61bacaB2C780A1)[https://mumbai.polygonscan.com/address/0x7a479AAe93f97F00117571ee1e61bacaB2C780A1]
+factory: address [0x420fAd7011A85cc6C308941A7245b7c0E695Fe85](https://mumbai.polygonscan.com/address/0x420fad7011a85cc6c308941a7245b7c0e695fe85)<br />
+exchange: [0x7a479AAe93f97F00117571ee1e61bacaB2C780A1](https://mumbai.polygonscan.com/address/0x7a479AAe93f97F00117571ee1e61bacaB2C780A1)
 
 ## Getting Started
 
