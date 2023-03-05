@@ -1,0 +1,27 @@
+{
+  "name": "huffswap-posta",
+  "version": "1.0.0",
+  "description": "<img align=\"right\" width=\"150\" height=\"150\" top=\"100\" src=\"./assets/blueprint.png\">",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "fork": "ganache-cli -f https://goerli.infura.io/v3/$KEY"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eugenioclrc/huffswap.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/eugenioclrc/huffswap/issues"
+  },
+  "homepage": "https://github.com/eugenioclrc/huffswap#readme",
+  "dependencies": {
+    "ganache-cli": "^6.12.2"
+  }
+}
